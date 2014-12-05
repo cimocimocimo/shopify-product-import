@@ -11,6 +11,7 @@ class Product:
             body,
             collection,
             price,
+            style_number,
             is_published):
 
         self.handle = slugify(title)
@@ -20,6 +21,7 @@ class Product:
         self.product_type = 'Dress'
         self.collection = collection
         self.price = price
+        self.style_number = style_number
         self.is_published = is_published
         self.tags = list()
         self.options = list()
@@ -64,11 +66,6 @@ class Option:
         self.name = name
         self.values = values
 
-class Image:
-    def __init__( self, url, alt ):
-        self.url = url
-        self.alt = alt
-
 
 class DataFile:
     """
@@ -111,14 +108,18 @@ class DataFile:
 
     def save(self):
 
+        # create a list of the column headers for the csv file
         headers = list()
         for k, v in self.schema.columns.iteritems():
             headers.append(k)
 
+        # create the rows of data to write to the file
         for row in self.data:
             for k, v in row.iteritems():
+                # call the appropriate save function for each column according to the schema
                 row[k] = self.schema.columns[k].save(v)
             
+        # save the processed data
         with open(self.filename, 'w+') as f:
             w = csv.DictWriter(f, fieldnames=headers)
             w.writeheader()
@@ -151,3 +152,72 @@ class Column:
             self.save = save_fn
         else:
             self.save = lambda x: x
+
+
+class ImageGallery:
+    """
+    Contains all the images for the products and their variants
+    """
+
+    def __init__(self, directory=None):
+        if directory is None:
+            return
+
+        self.directory = directory.rstrip('/')
+        self.collections = os.listdir(self.directory)
+        self.files = dict()
+        self.images = list()
+
+        for collection in self.collections:
+            collection_dir = self.directory + '/' + collection
+            self.files[collection] = os.listdir(collection_dir)
+            self.load_images(self.files[collection], collection)
+
+    def load_images(self, files, collection):
+        """ Creates Image objects for all the files in the collection """
+
+        for f in files:
+            self.images.append(Image(f, collection))
+
+    def get_product_images(self, style_number):
+        return [ image for image in self.images if image.style_number == style_number ]
+
+
+
+class Image:
+    base_url = 'http://cimocimocimo.s3.amazonaws.com/theia-images/'
+
+    def __init__(self, filename, collection):
+        self.filename = filename
+        self.collection = collection
+        self.style_number, self.color, self.description = self.parse_image_filename(self.filename)
+
+    def get_url(self):
+        return self.base_url + self.collection + '/' + self.filename
+
+    @staticmethod
+    def parse_image_filename(filename):
+        """ Pulls out the data from the image filename. """
+
+        # regexes
+        starts_with_six_digits = re.compile(r'^\d{6}')
+        capital_letter = re.compile(r'([A-Z]{1})')
+        plus = re.compile(r'\+')
+
+        # split the filename and extention
+        filename, extension = os.path.splitext(filename)
+        style_number, color, description = filename.split('_')
+
+        style_number = int(style_number)
+
+        # decode the color
+        # intCaps -> int/caps
+        color = capital_letter.sub(r'/\1', color).lower()
+        # plus+to+space -> plus to space
+        color = plus.sub(r' ', color)
+
+        # decode the description
+        description = plus.sub(r' ', description)
+
+        return style_number, color, description
+

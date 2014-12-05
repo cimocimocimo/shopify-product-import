@@ -32,6 +32,11 @@ def main(argv = None):
 
     target = DataFile(filename=argv[2], schema=schema.shopify_product)
 
+    # load the images from the gallery
+    # **todo** modify to use boto to list all the files in the s3 bucket directly.
+    # that way we don't need to keep the local directory and bucket in sync.
+    gallery = ImageGallery(directory=argv[3])
+
     # using the source data create a set of Product instances
     products = list()
     for item in source.data:
@@ -40,6 +45,7 @@ def main(argv = None):
             body=item['Dress Description'],
             collection=item['Collection'],
             price=item['Price (USD)'],
+            style_number=item['Style Number'],
             is_published=True
         )
         product.add_tag(item['Style Number'])
@@ -55,6 +61,11 @@ def main(argv = None):
         # get a list of all combinations of the product options
         variants = product.get_variants()
 
+        images = gallery.get_product_images(product.style_number)
+        for i, img in enumerate(images):
+            if 'front' in img.description:
+                featured_image = images.pop(i)
+
         product_rows = list()
 
         # we will need x number of rows where x is equal to the number of
@@ -69,7 +80,6 @@ def main(argv = None):
             row["Handle"] = product.handle
 
             if first:
-
                 first = False
                 
                 # 1st row is the general product data
@@ -79,6 +89,9 @@ def main(argv = None):
                 row["Type"] = product.product_type
                 row["Tags"] = product.tags
                 row["Published"] = product.is_published
+
+                row["Image Src"] = featured_image.get_url()
+                row["Image Alt Text"] = featured_image.description
 
             # following rows are data for the variants
 
@@ -95,6 +108,12 @@ def main(argv = None):
                 row[option_name_header] = option_name
                 row[option_value_header] = option_value
 
+                # if option_name == 'Color':
+                #     for i, img in enumerate(images):
+                #         if option_value == img.color and img.description == 'front':
+                #             row['Variant Image'] = img.get_url()
+                #             break
+
             row["Variant Inventory Tracker"] = "shopify"
             row["Variant Inventory Qty"] = 100
             row["Variant Inventory Policy"] = "deny"
@@ -103,12 +122,13 @@ def main(argv = None):
 
             product_rows.append(row)
 
-        # the first variant should be merged into the main product row
-
         # additional rows are needed for extra images
-
-        
-
+        for img in images:
+            row = collections.OrderedDict()
+            row["Handle"] = product.handle
+            row["Image Src"] = img.get_url()
+            row["Image Alt Text"] = img.description
+            product_rows.append(row)
 
 
         # add row(s) to the data file
