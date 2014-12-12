@@ -1,4 +1,4 @@
-import os, sys, csv, pprint, re, collections
+import os, sys, csv, pprint, re, collections, urllib
 import itertools
 from slugify import slugify
 
@@ -193,7 +193,7 @@ class Image:
         self.style_number, self.color, self.description = self.parse_image_filename(self.filename)
 
     def get_url(self):
-        return self.base_url + self.collection + '/' + self.filename
+        return self.base_url + self.collection + '/' + urllib.quote_plus(self.filename)
 
     @staticmethod
     def parse_image_filename(filename):
