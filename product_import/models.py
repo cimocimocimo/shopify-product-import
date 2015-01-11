@@ -13,6 +13,7 @@ class Product:
             price,
             style_number,
             presell,
+            fulfillment,
             is_published):
 
         self.handle = slugify(title)
@@ -24,6 +25,7 @@ class Product:
         self.price = price
         self.style_number = style_number
         self.presell = presell
+        self.fulfillment = fulfillment
         self.is_published = is_published
         self.tags = list()
         self.options = list()
@@ -53,9 +55,6 @@ class Product:
 
         # generate a list of tuples for each product option combination
         combined_options = list(itertools.product(*options_list))
-
-        # merge the dicitionaries stored in each tuple in the list and get the new list
-        variants = [collections.OrderedDict(x[1].items() + x[0].items()) for x in combined_options]
 
         return combined_options
 

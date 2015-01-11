@@ -8,6 +8,7 @@ js_group_dress = Schema(collections.OrderedDict([
     ("Dress Description", (str, str)),
     ("Collection", (str, str)),
     ("Presell", (bool_from_str, str_from_bool)),
+    ("Fulfillment", (str, str)),
     ("Sizes", (list_of_int_from_str, str_from_list)),
     ("Colors", (list_split_strip, str_from_list)),
     ("Price (USD)", (int_from_string, int))

@@ -118,7 +118,8 @@ def main(argv = None):
             row["Variant Inventory Tracker"] = "shopify"
             row["Variant Inventory Qty"] = 100
             row["Variant Inventory Policy"] = "continue" if product.presell else "deny"
-            row["Variant Fulfillment Service"] = "manual"
+            row["Variant Fulfillment Service"] = product.Fulfillment
+            row["Variant Requires Shipping"] = True
             row["Variant Price"] = product.price
 
             product_rows.append(row)
