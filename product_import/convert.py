@@ -46,6 +46,7 @@ def main(argv = None):
             collection=item['Collection'],
             price=item['Price (USD)'],
             style_number=item['Style Number'],
+            presell=item['Presell'],
             is_published=True
         )
         product.add_tag(item['Style Number'])
@@ -116,7 +117,7 @@ def main(argv = None):
 
             row["Variant Inventory Tracker"] = "shopify"
             row["Variant Inventory Qty"] = 100
-            row["Variant Inventory Policy"] = "deny"
+            row["Variant Inventory Policy"] = "continue" if product.presell else "deny"
             row["Variant Fulfillment Service"] = "manual"
             row["Variant Price"] = product.price
 

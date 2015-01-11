@@ -12,6 +12,7 @@ class Product:
             collection,
             price,
             style_number,
+            presell,
             is_published):
 
         self.handle = slugify(title)
@@ -22,6 +23,7 @@ class Product:
         self.collection = collection
         self.price = price
         self.style_number = style_number
+        self.presell = presell
         self.is_published = is_published
         self.tags = list()
         self.options = list()
