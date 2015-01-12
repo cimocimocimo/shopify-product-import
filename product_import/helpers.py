@@ -31,3 +31,9 @@ def two_place_float_from_str(s):
     not_digit_or_dot = re.compile(r'[^\d.]+')
     return round(float(not_digit_or_dot.sub('', s)), 2)
 
+def spaces_to_underscores(s):
+    space = re.compile(r'\s')
+    return space.sub(r'_', s)
+
+def forward_slash_to_mixedCase(s):
+    return re.sub(r'/([a-zA-Z]?)', lambda m: m.group(1).upper(), s)

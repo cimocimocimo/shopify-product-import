@@ -47,20 +47,17 @@ def main(argv = None):
             price=item['Price (USD)'],
             style_number=item['Style Number'],
             presell=item['Presell'],
+            fulfillment=item['Fulfillment'],
             is_published=True
         )
-        product.add_tag(item['Style Number'])
-        product.add_tag(item['Collection'])
         product.add_option('Size', item['Sizes'])
         product.add_option('Color', item['Colors'])
-        
+        product.populate_variants()
+
         products.append(product)
 
     # using these Product instances create the target data matching the target schema
     for product in products:
-
-        # get a list of all combinations of the product options
-        variants = product.get_variants()
 
         images = gallery.get_product_images(product.style_number)
         for i, img in enumerate(images):
@@ -74,7 +71,8 @@ def main(argv = None):
         # with a specific variant.
 
         first = True
-        for variant in variants:
+
+        for variant in product.variants:
 
             row = collections.OrderedDict()
 
@@ -97,7 +95,7 @@ def main(argv = None):
             # following rows are data for the variants
 
             # add each option
-            for i, option in enumerate(variant, start=1):
+            for i, option in enumerate(variant.option_combo, start=1):
                 option_name_header = "Option%s Name" % i
                 option_value_header = "Option%s Value" % i
 
@@ -115,10 +113,11 @@ def main(argv = None):
                 #             row['Variant Image'] = img.get_url()
                 #             break
 
+            row["Variant SKU"] = variant.sku
             row["Variant Inventory Tracker"] = "shopify"
             row["Variant Inventory Qty"] = 100
             row["Variant Inventory Policy"] = "continue" if product.presell else "deny"
-            row["Variant Fulfillment Service"] = product.Fulfillment
+            row["Variant Fulfillment Service"] = product.fulfillment
             row["Variant Requires Shipping"] = True
             row["Variant Price"] = product.price
 

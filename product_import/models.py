@@ -1,6 +1,7 @@
 import os, sys, csv, pprint, re, collections, urllib
 import itertools
 from slugify import slugify
+from helpers import *
 
 from pprint import pprint
 
@@ -27,9 +28,13 @@ class Product:
         self.presell = presell
         self.fulfillment = fulfillment
         self.is_published = is_published
+        self.variants = list()
         self.tags = list()
         self.options = list()
         self.images = list()
+
+        self.add_tag(self.style_number)
+        self.add_tag(self.collection)
 
     def __repr__(self):
         return "<Product handle:%s title:%s body:%s>" % (self.handle, self.title, self.body)
@@ -40,30 +45,70 @@ class Product:
     def add_option(self, name, values):
         self.options.append(Option(name, values))
 
-    def get_variants(self):
+    def populate_variants(self):
         """
         generates a list of dicts for each product variant.
         """
-        # get a list of dicts for each of the differnt options
-        options_list = list()
+        self.variants = list()
+
+        option_combos = self.generate_option_combos()
+
+        for combo in option_combos:
+            self.variants.append(Variant(
+                self.style_number,
+                option_combo=combo))
+
+    def generate_option_combos(self):
+        """
+        returns a list of all possible cominations of product options
+        each option combo is of the form:
+        ({'Option Name': 'Option Value'}, ...)
+        """
+        available_options = list()
         for option in self.options:
+            # generate a list of dicts for every value of the option
             tmp = list()
             for value in option.values:
                 tmp.append({option.name: value})
 
-            options_list.append(tmp)
+            available_options.append(tmp)
 
         # generate a list of tuples for each product option combination
-        combined_options = list(itertools.product(*options_list))
+        option_combos = list(itertools.product(*available_options))
 
-        return combined_options
+        return option_combos
 
     def get_images():
         pass
         
+class Variant:
+    """
+    Defines a unique combination of the product's options.
+    """
+    def __init__(self, style_number, option_combo):
+        self.style_number = style_number
+        self.option_combo = option_combo
+        self.generate_sku()
+
+    def generate_sku(self):
+        """
+        From the given options and style number create a sku 
+        sku starts with the style number
+        """
+        sku_parts = list()
+        sku_parts.append(str(self.style_number))
+        for option in self.option_combo:
+            for k, v in option.iteritems():
+                option_value = spaces_to_underscores(str(v))
+                option_value = forward_slash_to_mixedCase(option_value)
+                sku_parts.append(option_value)
+        self.sku = '-'.join(sku_parts)
 
 class Option:
-    def __init__( self, name, values ):
+    """
+    Defines the range of all possible values for a specific Product Option.
+    """
+    def __init__(self, name, values):
         self.name = name
         self.values = values
 

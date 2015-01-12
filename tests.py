@@ -1,4 +1,4 @@
-from product_import.models import ImageGallery, Image
+from product_import.models import ImageGallery, Image, Product, Option, Variant
 from product_import.helpers import *
 import unittest, os, csv, collections, shutil
 
@@ -83,7 +83,7 @@ class TestImageGallery(unittest.TestCase):
 
         image = Image('234987_color+name_description.jpg', 'test')
 
-        self.assertEqual(image.get_url(), 'http://cimocimocimo.s3.amazonaws.com/theia-images/test/234987_color+name_description.jpg')
+        self.assertEqual(image.get_url(), 'http://cimocimocimo.s3.amazonaws.com/theia-images/test/234987_color%2Bname_description.jpg')
 
     def test_image_properties(self):
 
@@ -105,6 +105,67 @@ class TestImageGallery(unittest.TestCase):
             self.assertEqual(image.style_number, expected[i][0])
             self.assertEqual(image.color, expected[i][1])
             self.assertEqual(image.description, expected[i][2])
+
+
+class TestProduct(unittest.TestCase):
+
+    def setUp(self):
+        self.test_product = Product(
+            title="Test Product Title",
+            body="<p>some content</p>",
+            collection="Test Collection Name",
+            price="999",
+            style_number=123456,
+            presell=True,
+            fulfillment='test-fulfilment',
+            is_published=True
+        )
+        self.test_product.add_option('Size', ['S', 'M', 'L'])
+        self.test_product.add_option('Color', ['Red', 'Blue'])
+        pass
+
+    def tearDown(self):
+        pass
+
+    def test_init(self):
+        pass
+
+    def test_populate_variants(self):
+
+        self.test_product.populate_variants()
+
+        self.assertIsInstance(self.test_product.variants, list)
+        self.assertIsInstance(self.test_product.variants[0], Variant)
+        self.assertEqual({'Size': 'S'}, self.test_product.variants[0].option_combo[0])
+        self.assertEqual({'Color': 'Red'}, self.test_product.variants[0].option_combo[1])
+        self.assertEqual('123456-S-Red', self.test_product.variants[0].sku)
+        pass
+
+class TestVariant(unittest.TestCase):
+    def setUp(self):
+        self.test_variant = Variant(
+            option_combo=({'Size': 'S'}, {'Color': 'Blue'}),
+            style_number=123456
+        )
+        pass
+
+    def tearDown(self):
+        pass
+
+    def test_init(self):
+        """
+        Given a set of options this options the Variant __init__ method should initialize the Variant instance.
+        """
+        blank_variant = Variant(0, tuple())
+        self.assertEqual(tuple(), blank_variant.option_combo)
+        self.assertEqual(0, blank_variant.style_number)
+        self.assertEqual(str(0), blank_variant.sku)
+        pass
+
+    def test_generate_sku(self):
+        self.test_variant.generate_sku()
+        self.assertEqual('123456-S-Blue', self.test_variant.sku)
+        pass
 
 if __name__ == '__main__':
     unittest.main()
