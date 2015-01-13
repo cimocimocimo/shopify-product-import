@@ -52,6 +52,8 @@ def main(argv = None):
         )
         product.add_option('Size', item['Sizes'])
         product.add_option('Color', item['Colors'])
+        if item['Waitlist']:
+            product.add_tag('waitlist')
         product.populate_variants()
 
         products.append(product)
@@ -115,7 +117,7 @@ def main(argv = None):
 
             row["Variant SKU"] = variant.sku
             row["Variant Inventory Tracker"] = "shopify"
-            row["Variant Inventory Qty"] = 100
+            row["Variant Inventory Qty"] = 0
             row["Variant Inventory Policy"] = "continue" if product.oversell else "deny"
             row["Variant Fulfillment Service"] = product.fulfillment
             row["Variant Requires Shipping"] = True
