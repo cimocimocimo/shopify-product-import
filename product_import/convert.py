@@ -46,7 +46,7 @@ def main(argv = None):
             collection=item['Collection'],
             price=item['Price (USD)'],
             style_number=item['Style Number'],
-            presell=item['Presell'],
+            oversell=item['Oversell'],
             fulfillment=item['Fulfillment'],
             is_published=True
         )
@@ -116,7 +116,7 @@ def main(argv = None):
             row["Variant SKU"] = variant.sku
             row["Variant Inventory Tracker"] = "shopify"
             row["Variant Inventory Qty"] = 100
-            row["Variant Inventory Policy"] = "continue" if product.presell else "deny"
+            row["Variant Inventory Policy"] = "continue" if product.oversell else "deny"
             row["Variant Fulfillment Service"] = product.fulfillment
             row["Variant Requires Shipping"] = True
             row["Variant Price"] = product.price
