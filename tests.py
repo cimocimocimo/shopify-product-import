@@ -1,4 +1,4 @@
-from product_import.models import ImageGallery, Image, Product, Option, Variant
+from product_import.models import ImageGallery, Image, Product, Option, Variant, Inventory
 from product_import.helpers import *
 import unittest, os, csv, collections, shutil
 
@@ -167,5 +167,19 @@ class TestVariant(unittest.TestCase):
         self.assertEqual('123456-S-Blue', self.test_variant.sku)
         pass
 
+
+class TestInventory(unittest.TestCase):
+
+    def setUp(self):
+        pass
+
+    def tearDown(self):
+        pass
+
+    def test_init(self):
+        pass
+        
+
 if __name__ == '__main__':
     unittest.main()
+    
