@@ -2,7 +2,18 @@ import collections
 from models import Schema
 from helpers import *
 
-js_group_dress = Schema(collections.OrderedDict([
+# each row maps to a variant of a product.
+left_to_sell_items = Schema(collections.OrderedDict([
+    ("Style", (int, int)),
+    ("Color", (str, str)),
+    ("Color Desc", (str, str)),
+    ("Size Desc", (int, int)),
+    ("Left to Sell", (int, int)),
+    ("price", (int_from_string, int)),
+]))
+
+# each row maps to a product with lists of options.
+js_group_dresses = Schema(collections.OrderedDict([
     ("Style Number", (int, int)),
     ("Dress Name", (str, str)),
     ("Dress Description", (str, str)),

@@ -11,8 +11,16 @@ def list_split_strip(s):
     return [s.strip() for s in l]
 
 def int_from_string(s):
+    my_int = 0
+
+    # used for replaceing everthing that's not a digit or a decimal
     not_digit_or_dot = re.compile(r'[^\d.]+')
-    return int(not_digit_or_dot.sub('', s))
+    my_int = not_digit_or_dot.sub('', s)
+
+    # get everthing before the decimal
+    my_int = my_int.split('.', 1)[0]
+
+    return int(my_int)
 
 def bool_from_str(s):
     s = s.lower()

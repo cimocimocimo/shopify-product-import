@@ -20,22 +20,25 @@ class Converter:
         pass
 
 
-def main(argv = None):
-
-    # get input and output filenames
-    if argv is None:
-        argv = sys.argv
+def main():
 
     # open the data files and unserialze the data according to their schema
-    source = DataFile(filename=argv[1], schema=schema.js_group_dress)
+    source = DataFile(filename='data/TheiaDresses.csv', schema=schema.js_group_dresses)
     source.load()
 
-    target = DataFile(filename=argv[2], schema=schema.shopify_product)
+    # load in the available inventory from the LTS report
+    left_to_sell = DataFile(filename='data/LeftToSell.csv', schema=schema.left_to_sell_items)
+    left_to_sell.load()
+
+    inventory = Inventory(left_to_sell.data)
+
+    # initialize the output csv file.
+    target = DataFile(filename='data/shopify_products.csv', schema=schema.shopify_product)
 
     # load the images from the gallery
     # **todo** modify to use boto to list all the files in the s3 bucket directly.
     # that way we don't need to keep the local directory and bucket in sync.
-    gallery = ImageGallery(directory=argv[3])
+    gallery = ImageGallery(directory='data/images')
 
     # using the source data create a set of Product instances
     products = list()
@@ -117,7 +120,7 @@ def main(argv = None):
 
             row["Variant SKU"] = variant.sku
             row["Variant Inventory Tracker"] = "shopify"
-            row["Variant Inventory Qty"] = 0
+            row["Variant Inventory Qty"] = inventory.get_quantity(variant.sku)
             row["Variant Inventory Policy"] = "continue" if product.oversell else "deny"
             row["Variant Fulfillment Service"] = product.fulfillment
             row["Variant Requires Shipping"] = True

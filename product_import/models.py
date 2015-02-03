@@ -88,21 +88,33 @@ class Variant:
     def __init__(self, style_number, option_combo):
         self.style_number = style_number
         self.option_combo = option_combo
-        self.generate_sku()
+        self.populate_sku()
 
-    def generate_sku(self):
+    def populate_sku(self):
         """
         From the given options and style number create a sku 
         sku starts with the style number
         """
-        sku_parts = list()
-        sku_parts.append(str(self.style_number))
+        options = dict()
         for option in self.option_combo:
             for k, v in option.iteritems():
-                option_value = spaces_to_underscores(str(v))
-                option_value = forward_slash_to_mixedCase(option_value)
-                sku_parts.append(option_value)
-        self.sku = '-'.join(sku_parts)
+                options[k] = v
+
+        self.sku = generate_sku(self.style_number, options['Size'], options['Color'])
+
+def generate_sku(style_number, size, color):
+
+    color = spaces_to_underscores(str(color))
+    color = forward_slash_to_mixedCase(color)
+
+    sku_parts = [
+        str(style_number),
+        str(size),
+        str(color)
+    ]
+
+    return '-'.join(sku_parts)
+
 
 class Option:
     """
@@ -266,4 +278,36 @@ class Image:
         description = plus.sub(r' ', description)
 
         return style_number, color, description
+
+class Inventory:
+    """
+    contains the inventory information for all the available inventory provided in the Left To Sell report.
+    """
+
+    def __init__(self, data):
+        """
+        loads the DataFile
+        """
+        self.items = dict()
+        for item in data:
+
+            key = generate_sku(item['Style'], item['Size Desc'], item['Color Desc'])
+            value = item['Left to Sell']
+
+            self.items[key] = value
+
+        print(self.items)
+        pass
+
+    def get_quantity(self, sku):
+        """
+        returns an int of the available inventory in the LTS report or 0 if not found.
+        """
+
+        try:
+            quantity = self.items[sku]
+        except KeyError:
+            quantity = 0
+
+        return quantity
 
