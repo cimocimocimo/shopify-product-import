@@ -28,6 +28,7 @@ class Product:
         self.oversell = oversell
         self.fulfillment = fulfillment
         self.is_published = is_published
+
         self.variants = list()
         self.tags = list()
         self.options = list()
@@ -45,7 +46,7 @@ class Product:
     def add_option(self, name, values):
         self.options.append(Option(name, values))
 
-    def populate_variants(self):
+    def populate_variants(self, inventory):
         """
         generates a list of dicts for each product variant.
         """
@@ -56,7 +57,8 @@ class Product:
         for combo in option_combos:
             self.variants.append(Variant(
                 self.style_number,
-                option_combo=combo))
+                option_combo=combo,
+                inventory=inventory))
 
     def generate_option_combos(self):
         """
@@ -85,10 +87,11 @@ class Variant:
     """
     Defines a unique combination of the product's options.
     """
-    def __init__(self, style_number, option_combo):
+    def __init__(self, style_number, option_combo, inventory):
         self.style_number = style_number
         self.option_combo = option_combo
         self.populate_sku()
+        self.get_quantity_from_inventory(inventory)
 
     def populate_sku(self):
         """
@@ -101,6 +104,9 @@ class Variant:
                 options[k] = v
 
         self.sku = generate_sku(self.style_number, options['Size'], options['Color'])
+
+    def get_quantity_from_inventory(self, inventory):
+        self.quantity = inventory.get_quantity(self.sku)
 
 def generate_sku(style_number, size, color):
 
@@ -296,8 +302,6 @@ class Inventory:
 
             self.items[key] = value
 
-        print(self.items)
-        pass
 
     def get_quantity(self, sku):
         """

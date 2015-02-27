@@ -57,12 +57,27 @@ def main():
         product.add_option('Color', item['Colors'])
         if item['Waitlist']:
             product.add_tag('waitlist')
-        product.populate_variants()
+        product.populate_variants(inventory)
 
         products.append(product)
 
+    # remove products that have no instock variants and are not in the Sprint 2015 collection
+    for product in products:
+
+        product.in_stock = False
+        for variant in product.variants:
+            if variant.quantity > 0:
+                product.in_stock = True
+        
+
     # using these Product instances create the target data matching the target schema
     for product in products:
+
+        # we are not selling the out of stock items on the site so we don't add them to the export
+        # we are only preselling the spring 2015 collection
+        if not product.in_stock and product.collection != 'Spring 2015':
+            print('continue')
+            continue
 
         images = gallery.get_product_images(product.style_number)
         for i, img in enumerate(images):
@@ -120,7 +135,7 @@ def main():
 
             row["Variant SKU"] = variant.sku
             row["Variant Inventory Tracker"] = "shopify"
-            row["Variant Inventory Qty"] = inventory.get_quantity(variant.sku)
+            row["Variant Inventory Qty"] = variant.quantity
             row["Variant Inventory Policy"] = "continue" if product.oversell else "deny"
             row["Variant Fulfillment Service"] = product.fulfillment
             row["Variant Requires Shipping"] = True
