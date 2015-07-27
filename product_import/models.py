@@ -46,7 +46,7 @@ class Product:
     def add_option(self, name, values):
         self.options.append(Option(name, values))
 
-    def populate_variants(self, inventory):
+    def populate_variants(self, inventory=None):
         """
         generates a list of dicts for each product variant.
         """
@@ -87,11 +87,14 @@ class Variant:
     """
     Defines a unique combination of the product's options.
     """
-    def __init__(self, style_number, option_combo, inventory):
+    def __init__(self, style_number, option_combo, inventory=None):
         self.style_number = style_number
         self.option_combo = option_combo
         self.populate_sku()
-        self.get_quantity_from_inventory(inventory)
+        if inventory != None:
+            self.get_quantity_from_inventory(inventory)
+        else:
+            self.quantity = 0
 
     def populate_sku(self):
         """
@@ -103,7 +106,12 @@ class Variant:
             for k, v in option.iteritems():
                 options[k] = v
 
-        self.sku = generate_sku(self.style_number, options['Size'], options['Color'])
+        if (self.style_number != None and
+            'Size' in options and
+            'Color' in options):
+            self.sku = generate_sku(self.style_number, options['Size'], options['Color'])
+        else:
+            self.sku = None
 
     def get_quantity_from_inventory(self, inventory):
         self.quantity = inventory.get_quantity(self.sku)
@@ -179,6 +187,7 @@ class DataFile:
 
         # create the rows of data to write to the file
         for row in self.data:
+
             for k, v in row.iteritems():
                 # call the appropriate save function for each column according to the schema
                 row[k] = self.schema.columns[k].save(v)

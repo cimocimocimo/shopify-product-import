@@ -116,7 +116,7 @@ class TestProduct(unittest.TestCase):
             collection="Test Collection Name",
             price="999",
             style_number=123456,
-            presell=True,
+            oversell=True,
             fulfillment='test-fulfilment',
             is_published=True
         )
@@ -145,7 +145,7 @@ class TestVariant(unittest.TestCase):
     def setUp(self):
         self.test_variant = Variant(
             option_combo=({'Size': 'S'}, {'Color': 'Blue'}),
-            style_number=123456
+            style_number=123456,
         )
         pass
 
@@ -159,12 +159,14 @@ class TestVariant(unittest.TestCase):
         blank_variant = Variant(0, tuple())
         self.assertEqual(tuple(), blank_variant.option_combo)
         self.assertEqual(0, blank_variant.style_number)
-        self.assertEqual(str(0), blank_variant.sku)
+        self.assertEqual(None, blank_variant.sku)
+        self.assertEqual(0, blank_variant.quantity)
         pass
 
     def test_generate_sku(self):
-        self.test_variant.generate_sku()
+        self.test_variant.populate_sku()
         self.assertEqual('123456-S-Blue', self.test_variant.sku)
+        self.assertEqual(0, self.test_variant.quantity)
         pass
 
 
@@ -182,4 +184,3 @@ class TestInventory(unittest.TestCase):
 
 if __name__ == '__main__':
     unittest.main()
-    
