@@ -1,7 +1,6 @@
-import collections
+import collections, re, pprint
 import schema
 from models import *
-import pprint
 
 class Converter:
     """
@@ -19,9 +18,74 @@ class Converter:
     def export_data(self, target, item_mapper):
         pass
 
+def prepare_left_to_sell_file():
+    
+    try:
+        f = open('data/NewLeftToSell.csv', 'r')
+    except IOError:
+        return
+    
+    rows_list = [list(line) for line in csv.reader(f)]
+    
+    # the size labels
+    sizes = rows_list[6][5:15]
+    
+    pattern = re.compile("(^\d{6})\s/\s/\s(\w{3})\s{2}(.+)")
 
+    variants = list()
+    
+    # the dress inventories
+    for row in rows_list[8:]:
+        if row[0] == '':
+            break
+        
+        match = pattern.match(row[0])
+        style = match.group(1)
+        color_code = match.group(2)
+        color_name = match.group(3)
+        
+        # fix color name abbreviations
+        color_abbreviations = {"blk/watermelon": "black/watermelon",
+                               "blush/mid": "blush/midnight"}
+        if color_name in color_abbreviations:
+            color_name = color_abbreviations[color_name]
+
+        price = int_from_string(row[1].strip())
+            
+        quantities = row[5:15]
+        
+        # create rows for each of the sizes
+        for index, size in enumerate(sizes):
+            item = collections.OrderedDict()
+            item["Style"] = style
+            item["Color"] = color_code
+            item["Color Desc"] = color_name
+            item["Size Desc"] = size
+            item["Left to Sell"] = quantities[index]
+            item["price"] = price
+            
+            variants.append(item)
+
+    # the tags
+    print rows_list[6][16:]
+    
+    # the size labels
+    print rows_list[6][5:15]
+    
+    pprint(variants)
+    
+    
+    # initialize the output csv file.
+    target = DataFile(filename='data/TempNewLeftToSell.csv', schema=schema.left_to_sell_items)
+    
+    target.data = variants
+    
+    target.save()
+        
 def main():
-
+    
+    prepare_left_to_sell_file()
+    
     # open the data files and unserialze the data according to their schema
     source = DataFile(filename='data/TheiaDresses.csv', schema=schema.js_group_dresses)
     source.load()
@@ -76,7 +140,7 @@ def main():
         # we are not selling the out of stock items on the site so we don't add them to the export
         # we are only preselling the spring 2015 collection
         if not product.in_stock and product.collection != 'Spring 2015':
-            print('continue')
+            # print('continue')
             continue
 
         images = gallery.get_product_images(product.style_number)
