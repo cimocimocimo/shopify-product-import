@@ -30,6 +30,9 @@ def prepare_left_to_sell_file():
     # the size labels
     sizes = rows_list[6][5:15]
     
+    # the tags
+    tag_names = rows_list[6][16:]
+
     pattern = re.compile("(^\d{6})\s/\s/\s(\w{3})\s{2}(.+)")
 
     variants = list()
@@ -54,6 +57,14 @@ def prepare_left_to_sell_file():
             
         quantities = row[5:15]
         
+        tag_matrix = row[16:]
+        row_tags = []
+        for index, name in enumerate(tag_names):
+            if tag_matrix[index] != '':
+                row_tags.append(tag_names[index])
+                
+        tag_list = ','.join(row_tags)
+        
         # create rows for each of the sizes
         for index, size in enumerate(sizes):
             item = collections.OrderedDict()
@@ -63,17 +74,9 @@ def prepare_left_to_sell_file():
             item["Size Desc"] = size
             item["Left to Sell"] = quantities[index]
             item["price"] = price
+            item["tags"] = tag_list
             
             variants.append(item)
-
-    # the tags
-    print rows_list[6][16:]
-    
-    # the size labels
-    print rows_list[6][5:15]
-    
-    pprint(variants)
-    
     
     # initialize the output csv file.
     target = DataFile(filename='data/TempNewLeftToSell.csv', schema=schema.left_to_sell_items)
@@ -84,6 +87,8 @@ def prepare_left_to_sell_file():
         
 def main():
     
+    # this prepares the LTS report from the weird table layout to the old LTS report format that's
+    # specified in the schema.
     prepare_left_to_sell_file()
     
     # open the data files and unserialze the data according to their schema
@@ -91,7 +96,7 @@ def main():
     source.load()
 
     # load in the available inventory from the LTS report
-    left_to_sell = DataFile(filename='data/LeftToSell.csv', schema=schema.left_to_sell_items)
+    left_to_sell = DataFile(filename='data/TempNewLeftToSell.csv', schema=schema.left_to_sell_items)
     left_to_sell.load()
 
     inventory = Inventory(left_to_sell.data)

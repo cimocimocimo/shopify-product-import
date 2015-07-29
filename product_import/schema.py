@@ -10,6 +10,7 @@ left_to_sell_items = Schema(collections.OrderedDict([
     ("Size Desc", (int, int)),
     ("Left to Sell", (int, int)),
     ("price", (int_from_string, int)),
+    ("tags", (str, str)),
 ]))
 
 # each row maps to a product with lists of options.
