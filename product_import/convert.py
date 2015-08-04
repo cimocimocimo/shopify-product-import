@@ -25,13 +25,14 @@ def prepare_left_to_sell_file():
     except IOError:
         return
     
+    # read all lines of the csv into a 2D list, rows as the first level, columns 2nd.
     rows_list = [list(line) for line in csv.reader(f)]
     
     # the size labels
-    sizes = rows_list[6][5:15]
+    sizes = rows_list[6][3:12]
     
     # the tags
-    tag_names = rows_list[6][16:]
+    tag_names = rows_list[6][12:]
 
     pattern = re.compile("(^\d{6})\s/\s/\s(\w{3})\s{2}(.+)")
 
@@ -55,15 +56,13 @@ def prepare_left_to_sell_file():
 
         price = int_from_string(row[1].strip())
             
-        quantities = row[5:15]
+        quantities = row[3:12]
         
-        tag_matrix = row[16:]
+        tag_matrix = row[12:]
         row_tags = []
         for index, name in enumerate(tag_names):
             if tag_matrix[index] != '':
                 row_tags.append(tag_names[index])
-                
-        tag_list = ','.join(row_tags)
         
         # create rows for each of the sizes
         for index, size in enumerate(sizes):
@@ -74,12 +73,12 @@ def prepare_left_to_sell_file():
             item["Size Desc"] = size
             item["Left to Sell"] = quantities[index]
             item["price"] = price
-            item["tags"] = tag_list
+            item["tags"] = row_tags
             
             variants.append(item)
     
     # initialize the output csv file.
-    target = DataFile(filename='data/TempNewLeftToSell.csv', schema=schema.left_to_sell_items)
+    target = DataFile(filename='data/LeftToSell.csv', schema=schema.left_to_sell_items)
     
     target.data = variants
     
@@ -96,14 +95,30 @@ def main():
     source.load()
 
     # load in the available inventory from the LTS report
-    left_to_sell = DataFile(filename='data/TempNewLeftToSell.csv', schema=schema.left_to_sell_items)
+    left_to_sell = DataFile(filename='data/LeftToSell.csv', schema=schema.left_to_sell_items)
     left_to_sell.load()
 
+    # check for styles in the LTS data that are missing from the main dress list
+    for lts_item in left_to_sell.data:
+        lts_item_missing_in_main_data = True
+        for main_item in source.data:
+            if main_item["Style Number"] == lts_item["Style"]:
+                lts_item_missing_in_main_data = False
+                break
+        if lts_item_missing_in_main_data:
+            print lts_item["Style"], lts_item['Color Desc']
+            
+            
     inventory = Inventory(left_to_sell.data)
-
+    left_to_sell_data = LeftToSellData(left_to_sell.data)
+    
     # initialize the output csv file.
     target = DataFile(filename='data/shopify_products.csv', schema=schema.shopify_product)
 
+    
+    # missing image list
+    missing_image_list = DataFile(filename='data/prods_missing_images.csv', schema=schema.dresses_missing_images)
+    
     # load the images from the gallery
     # **todo** modify to use boto to list all the files in the s3 bucket directly.
     # that way we don't need to keep the local directory and bucket in sync.
@@ -126,13 +141,19 @@ def main():
         product.add_option('Color', item['Colors'])
         if item['Waitlist']:
             product.add_tag('waitlist')
+            
+        lts_tags = left_to_sell_data.get_tags(item["Style Number"])
+        if lts_tags != None and len(lts_tags) > 0:
+            for tag in lts_tags:
+                product.add_tag(tag)
+            
         product.populate_variants(inventory)
 
         products.append(product)
 
-    # remove products that have no instock variants and are not in the Sprint 2015 collection
+    # check inventory levels for each product
+    # mark product as in stock if any variants have any stock
     for product in products:
-
         product.in_stock = False
         for variant in product.variants:
             if variant.quantity > 0:
@@ -144,14 +165,40 @@ def main():
 
         # we are not selling the out of stock items on the site so we don't add them to the export
         # we are only preselling the spring 2015 collection
-        if not product.in_stock and product.collection != 'Spring 2015':
-            # print('continue')
-            continue
+        # if not product.in_stock and product.collection != 'Spring 2015':
+        #     # print('continue')
+        #     continue
+        
+        if product.in_stock:
+            # add to 'Shop' Collection
+            product.product_type = 'Theia Shop'
+        else:
+            product.product_type = 'Theia Collection'
 
+        # get the product images
         images = gallery.get_product_images(product.style_number)
-        for i, img in enumerate(images):
-            if 'front' in img.description:
-                featured_image = images.pop(i)
+        
+        # don't add the product if it's missing an image.
+        if len(images) == 0:
+            product_missing_images = collections.OrderedDict()
+            product_missing_images["Style Number"] = product.style_number
+            product_missing_images["Dress Name"] = product.title
+            product_missing_images["Collection"] = product.collection
+            
+            missing_image_list.data.append(product_missing_images)
+
+            continue
+        
+        # default is None
+        featured_image = None
+        if len(images) > 0:
+            # check for a front view image
+            for i, img in enumerate(images):
+                if 'front' in img.description:
+                    featured_image = images.pop(i)
+            # if nothing found then just set to the first image
+            if featured_image == None:
+                featured_image = images.pop(0)
 
         product_rows = list()
 
@@ -177,10 +224,15 @@ def main():
                 row["Type"] = product.product_type
                 row["Tags"] = product.tags
                 row["Published"] = product.is_published
+                row["Collection"] = product.collection
 
-                row["Image Src"] = featured_image.get_url()
-                row["Image Alt Text"] = featured_image.description
-
+                if featured_image == None:
+                     row["Image Src"] = ''
+                     row["Image Alt Text"] = ''
+                else:
+                    row["Image Src"] = featured_image.get_url()
+                    row["Image Alt Text"] = featured_image.description
+                
             # following rows are data for the variants
 
             # add each option
@@ -227,6 +279,9 @@ def main():
 
     # save the target file
     target.save()
+    
+    # save the missing images.
+    missing_image_list.save()
 
 if __name__ == '__main__':
     main()

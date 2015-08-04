@@ -36,7 +36,16 @@ class Product:
 
         self.add_tag(self.style_number)
         self.add_tag(self.collection)
-
+        # add the collection name without the year as a tag as well.
+        split_collection_year = re.compile('(.*)\s+(\d{4}$)')
+        coll_year_match = split_collection_year.search(self.collection)
+        collection_name = coll_year_match.group(1)
+        collection_year = coll_year_match.group(2)
+        self.add_tag(collection_name)
+        self.add_tag(collection_year)
+        if collection_name != 'Bridal':
+            self.add_tag('Evening Wear')
+        
     def __repr__(self):
         return "<Product handle:%s title:%s body:%s>" % (self.handle, self.title, self.body)
 
@@ -187,7 +196,6 @@ class DataFile:
 
         # create the rows of data to write to the file
         for row in self.data:
-
             for k, v in row.iteritems():
                 # call the appropriate save function for each column according to the schema
                 row[k] = self.schema.columns[k].save(v)
@@ -237,13 +245,15 @@ class ImageGallery:
             return
 
         self.directory = directory.rstrip('/')
-        self.collections = os.listdir(self.directory)
+        # self.collections = os.listdir(self.directory)
+        self.collections = list(listdir_nohidden(self.directory))
         self.files = dict()
         self.images = list()
 
         for collection in self.collections:
             collection_dir = self.directory + '/' + collection
-            self.files[collection] = os.listdir(collection_dir)
+            # self.files[collection] = os.listdir(collection_dir)
+            self.files[collection] = list(listdir_nohidden(collection_dir))
             self.load_images(self.files[collection], collection)
 
     def load_images(self, files, collection):
@@ -271,7 +281,7 @@ class Image:
     @staticmethod
     def parse_image_filename(filename):
         """ Pulls out the data from the image filename. """
-
+        
         # regexes
         starts_with_six_digits = re.compile(r'^\d{6}')
         capital_letter = re.compile(r'([A-Z]{1})')
@@ -293,7 +303,34 @@ class Image:
         description = plus.sub(r' ', description)
 
         return style_number, color, description
+    
+class LeftToSellData:
+    """
+    Contains the data from the left to sell spreadsheet
+    """
 
+    def __init__(self, data):
+        """
+        loads the left to sell data
+        """
+        self.products = dict()
+        for item in data:
+            style_number = item["Style"]
+            
+            if style_number not in self.products:
+                product = {"price": item["price"],
+                           "tags": item["tags"]}
+                self.products[style_number] = product
+                
+    def get_tags(self, style_number):
+        if style_number in self.products:
+            return self.products[style_number]["tags"]
+                
+    def get_price(self, style_number):
+        if style_number in self.products:
+            return self.products[style_number]["price"]
+    
+    
 class Inventory:
     """
     contains the inventory information for all the available inventory provided in the Left To Sell report.
@@ -324,3 +361,7 @@ class Inventory:
 
         return quantity
 
+def listdir_nohidden(path):
+    for f in os.listdir(path):
+        if not f.startswith('.'):
+            yield f

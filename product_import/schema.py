@@ -10,7 +10,7 @@ left_to_sell_items = Schema(collections.OrderedDict([
     ("Size Desc", (int, int)),
     ("Left to Sell", (int, int)),
     ("price", (int_from_string, int)),
-    ("tags", (str, str)),
+    ("tags", (list_split_strip, str_from_list)),
 ]))
 
 # each row maps to a product with lists of options.
@@ -73,4 +73,11 @@ shopify_product = Schema(collections.OrderedDict([
     ("Google Shopping / Custom Label 2", (None, None)),
     ("Google Shopping / Custom Label 3", (None, None)),
     ("Google Shopping / Custom Label 4", (None, None))
+]))
+
+# each row maps to a product with lists of options.
+dresses_missing_images = Schema(collections.OrderedDict([
+    ("Style Number", (int, int)),
+    ("Dress Name", (str, str)),
+    ("Collection", (str, str)),
 ]))
