@@ -261,6 +261,9 @@ def main():
             row["Variant Fulfillment Service"] = product.fulfillment
             row["Variant Requires Shipping"] = True
             row["Variant Price"] = product.price
+            # Weight unit and Variant Grams are independent of eachother
+            row["Variant Weight Unit"] = 'lb' # used for displaying the weight
+            row["Variant Grams"] = 900 # used inside Shopify, must always be in grams
 
             product_rows.append(row)
 
