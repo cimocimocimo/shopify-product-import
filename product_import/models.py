@@ -14,6 +14,7 @@ class Product:
             price,
             style_number,
             oversell,
+            waitlist,
             fulfillment,
             is_published):
 
@@ -26,6 +27,7 @@ class Product:
         self.price = price
         self.style_number = style_number
         self.oversell = oversell
+        self.waitlist = waitlist
         self.fulfillment = fulfillment
         self.is_published = is_published
 
@@ -44,7 +46,7 @@ class Product:
         self.add_tag(collection_name)
         self.add_tag(collection_year)
         if collection_name != 'Bridal':
-            self.add_tag('Evening Wear')
+            self.add_tag('Collections')
         
     def __repr__(self):
         return "<Product handle:%s title:%s body:%s>" % (self.handle, self.title, self.body)

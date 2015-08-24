@@ -134,6 +134,7 @@ def main():
             price=item['Price (USD)'],
             style_number=item['Style Number'],
             oversell=item['Oversell'],
+            waitlist=item['Waitlist'],
             fulfillment=item['Fulfillment'],
             is_published=True
         )
@@ -169,7 +170,7 @@ def main():
         #     # print('continue')
         #     continue
         
-        if product.in_stock:
+        if product.in_stock or product.waitlist:
             # add to 'Shop' Collection
             product.product_type = 'Theia Shop'
         else:
@@ -195,10 +196,10 @@ def main():
             # check for a front view image
             for i, img in enumerate(images):
                 if 'front' in img.description:
-                    featured_image = images.pop(i)
+                    featured_image = img
             # if nothing found then just set to the first image
             if featured_image == None:
-                featured_image = images.pop(0)
+                featured_image = img
 
         product_rows = list()
 
@@ -248,11 +249,12 @@ def main():
                 row[option_name_header] = option_name
                 row[option_value_header] = option_value
 
-                # if option_name == 'Color':
-                #     for i, img in enumerate(images):
-                #         if option_value == img.color and img.description == 'front':
-                #             row['Variant Image'] = img.get_url()
-                #             break
+                # Add the front view for each variant as the variant image based on color
+                if option_name == 'Color' and len(images) > 0:
+                    for i, img in enumerate(images):
+                        if option_value == img.color and 'front' in img.description:
+                            row["Variant Image"] = img.get_url()
+                            break
 
             row["Variant SKU"] = variant.sku
             row["Variant Inventory Tracker"] = "shopify"
@@ -264,7 +266,7 @@ def main():
             # Weight unit and Variant Grams are independent of eachother
             row["Variant Weight Unit"] = 'lb' # used for displaying the weight
             row["Variant Grams"] = 900 # used inside Shopify, must always be in grams
-
+            
             product_rows.append(row)
 
         # additional rows are needed for extra images
@@ -278,7 +280,6 @@ def main():
 
         # add row(s) to the data file
         target.data += product_rows
-
 
     # save the target file
     target.save()
