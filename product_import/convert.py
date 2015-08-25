@@ -255,7 +255,11 @@ def main():
                         if option_value == img.color and 'front' in img.description:
                             row["Variant Image"] = img.get_url()
                             break
-
+                        
+            # skip this row if there is no associated variant image
+            if "Variant Image" not in row:
+                continue
+                        
             row["Variant SKU"] = variant.sku
             row["Variant Inventory Tracker"] = "shopify"
             row["Variant Inventory Qty"] = variant.quantity
