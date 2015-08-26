@@ -280,6 +280,13 @@ class Image:
     def get_url(self):
         return self.base_url + self.collection + '/' + urllib.quote_plus(self.filename)
 
+    def get_img_alt_data_string(self):
+        """
+        creates a data packed string like this: 'color%PAIR%blue%ITEM%some%PAIR%thing%DATA%This is the alt text'
+        unpacked in the shopify strings
+        """
+        return 'color%PAIR%{}%DATA%{}'.format(self.color, self.description)
+    
     @staticmethod
     def parse_image_filename(filename):
         """ Pulls out the data from the image filename. """

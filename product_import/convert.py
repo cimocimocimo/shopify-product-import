@@ -1,6 +1,7 @@
 import collections, re, pprint
 import schema
 from models import *
+import json
 
 class Converter:
     """
@@ -232,7 +233,7 @@ def main():
                      row["Image Alt Text"] = ''
                 else:
                     row["Image Src"] = featured_image.get_url()
-                    row["Image Alt Text"] = featured_image.description
+                    row["Image Alt Text"] = featured_image.get_img_alt_data_string()
                 
             # following rows are data for the variants
 
@@ -278,7 +279,7 @@ def main():
             row = collections.OrderedDict()
             row["Handle"] = product.handle
             row["Image Src"] = img.get_url()
-            row["Image Alt Text"] = img.description
+            row["Image Alt Text"] = img.get_img_alt_data_string()
             product_rows.append(row)
 
 
