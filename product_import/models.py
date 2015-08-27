@@ -127,6 +127,21 @@ class Variant:
     def get_quantity_from_inventory(self, inventory):
         self.quantity = inventory.get_quantity(self.sku)
 
+    def option_term_exists(self, term):
+        for option in self.option_combo:
+            for k, v in option.iteritems():
+                if k == term:
+                    return True
+        return False
+
+    def get_option_value_by_term(self, term):
+        if self.option_term_exists(term):
+            for option in self.option_combo:
+                for k, v in option.iteritems():
+                    if k == term:
+                        return v
+        return None
+
 def generate_sku(style_number, size, color):
 
     color = spaces_to_underscores(str(color))

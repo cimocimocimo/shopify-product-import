@@ -51,7 +51,11 @@ def prepare_left_to_sell_file():
         
         # fix color name abbreviations
         color_abbreviations = {"blk/watermelon": "black/watermelon",
-                               "blush/mid": "blush/midnight"}
+                               "blush/mid": "blush/midnight",
+                               "prb  - prussian blue": "prussian blue",
+                               "blk/midnight": "black/midnight",
+                               "blk pewter": "black pewter",
+                               "blk/teal": "black/teal"}
         if color_name in color_abbreviations:
             color_name = color_abbreviations[color_name]
 
@@ -214,6 +218,18 @@ def main():
 
             row = collections.OrderedDict()
 
+            # check for an image to use for this variant
+            variant_color = variant.get_option_value_by_term('Color')
+            variant_image = None
+            for image in images:
+                if image.color == variant_color and 'front' in image.description:
+                    variant_image = image
+                    break
+
+            # if no variant_image skip this row and go to the next variant
+            if variant_image == None:
+                continue
+            
             row["Handle"] = product.handle
 
             if first:
@@ -228,12 +244,12 @@ def main():
                 row["Published"] = product.is_published
                 row["Collection"] = product.collection
 
-                if featured_image == None:
+                if variant_image == None:
                      row["Image Src"] = ''
                      row["Image Alt Text"] = ''
                 else:
-                    row["Image Src"] = featured_image.get_url()
-                    row["Image Alt Text"] = featured_image.get_img_alt_data_string()
+                    row["Image Src"] = variant_image.get_url()
+                    row["Image Alt Text"] = variant_image.get_img_alt_data_string()
                 
             # following rows are data for the variants
 
@@ -250,17 +266,6 @@ def main():
                 row[option_name_header] = option_name
                 row[option_value_header] = option_value
 
-                # Add the front view for each variant as the variant image based on color
-                if option_name == 'Color' and len(images) > 0:
-                    for i, img in enumerate(images):
-                        if option_value == img.color and 'front' in img.description:
-                            row["Variant Image"] = img.get_url()
-                            break
-                        
-            # skip this row if there is no associated variant image
-            if "Variant Image" not in row:
-                continue
-                        
             row["Variant SKU"] = variant.sku
             row["Variant Inventory Tracker"] = "shopify"
             row["Variant Inventory Qty"] = variant.quantity
@@ -271,6 +276,7 @@ def main():
             # Weight unit and Variant Grams are independent of eachother
             row["Variant Weight Unit"] = 'lb' # used for displaying the weight
             row["Variant Grams"] = 900 # used inside Shopify, must always be in grams
+            row["Variant Image"] = variant_image.get_url()
             
             product_rows.append(row)
 
@@ -281,7 +287,6 @@ def main():
             row["Image Src"] = img.get_url()
             row["Image Alt Text"] = img.get_img_alt_data_string()
             product_rows.append(row)
-
 
         # add row(s) to the data file
         target.data += product_rows
