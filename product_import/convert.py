@@ -155,6 +155,9 @@ def main():
             for tag in lts_tags:
                 product.add_tag(tag)
             
+        if product.is_on_sale():
+            product.add_tag("On Sale")
+                
         product.populate_variants(inventory)
 
         products.append(product)
