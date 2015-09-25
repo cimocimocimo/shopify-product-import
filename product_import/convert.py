@@ -59,7 +59,7 @@ def prepare_left_to_sell_file():
         if color_name in color_abbreviations:
             color_name = color_abbreviations[color_name]
 
-        price = int_from_string(row[1].strip())
+        price = int_from_str(row[1].strip())
             
         quantities = row[3:12]
         
@@ -137,6 +137,8 @@ def main():
             body=item['Dress Description'],
             collection=item['Collection'],
             price=item['Price (USD)'],
+            sale_price=item['Sale Price'],
+            on_sale=item['On Sale'],
             style_number=item['Style Number'],
             oversell=item['Oversell'],
             waitlist=item['Waitlist'],
@@ -272,7 +274,10 @@ def main():
             row["Variant Inventory Policy"] = "continue" if product.oversell else "deny"
             row["Variant Fulfillment Service"] = product.fulfillment
             row["Variant Requires Shipping"] = True
-            row["Variant Price"] = product.price
+            row["Variant Price"] = product.get_price()
+            if product.is_on_sale():
+                row["Variant Compare At Price"] = product.get_regular_price()
+
             # Weight unit and Variant Grams are independent of eachother
             row["Variant Weight Unit"] = 'lb' # used for displaying the weight
             row["Variant Grams"] = 900 # used inside Shopify, must always be in grams

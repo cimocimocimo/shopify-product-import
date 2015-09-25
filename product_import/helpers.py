@@ -10,8 +10,12 @@ def list_split_strip(s):
     l = s.split(',')
     return [s.strip() for s in l]
 
-def int_from_string(s):
+def int_from_str(s):
     my_int = 0
+
+    # if blank string just return 0
+    if s == '':
+        return my_int
 
     # used for replaceing everthing that's not a digit or a decimal
     not_digit_or_dot = re.compile(r'[^\d.]+')

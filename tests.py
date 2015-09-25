@@ -114,15 +114,33 @@ class TestProduct(unittest.TestCase):
             title="Test Product Title",
             body="<p>some content</p>",
             collection="Test Collection Name",
-            price="999",
+            price=999,
+            sale_price=759,
+            on_sale=False,
             style_number=123456,
             oversell=True,
+            waitlist=False,
             fulfillment='test-fulfilment',
             is_published=True
         )
         self.test_product.add_option('Size', ['S', 'M', 'L'])
         self.test_product.add_option('Color', ['Red', 'Blue'])
-        pass
+        
+        self.test_product_sale = Product(
+            title="Test Product On Sale",
+            body="<p>some content</p>",
+            collection="Test Collection Name",
+            price=999,
+            sale_price=759,
+            on_sale=True,
+            style_number=123457,
+            oversell=False,
+            waitlist=False,
+            fulfillment='test-fulfilment',
+            is_published=True
+        )
+        self.test_product_sale.add_option('Size', ['S', 'M', 'L'])
+        self.test_product_sale.add_option('Color', ['Green', 'Yellow'])
 
     def tearDown(self):
         pass
@@ -140,7 +158,21 @@ class TestProduct(unittest.TestCase):
         self.assertEqual({'Color': 'Red'}, self.test_product.variants[0].option_combo[1])
         self.assertEqual('123456-S-Red', self.test_product.variants[0].sku)
         pass
+    
+    def test_get_price(self):
+        self.assertEqual(self.test_product.get_price(), 999)
+        
+    def test_sale_price(self):
+        self.assertEqual(self.test_product_sale.get_price(), 759)
+        
+    def test_get_regular_price(self):
+        self.assertEqual(self.test_product_sale.get_regular_price(), 999)
 
+    def test_is_on_sale(self):
+        self.assertEqual(self.test_product.is_on_sale(), False)
+        self.assertEqual(self.test_product_sale.is_on_sale(), True)
+
+        
 class TestVariant(unittest.TestCase):
     def setUp(self):
         self.test_variant = Variant(
@@ -180,7 +212,7 @@ class TestInventory(unittest.TestCase):
 
     def test_init(self):
         pass
-        
+    
 
 if __name__ == '__main__':
     unittest.main()

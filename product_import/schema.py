@@ -9,7 +9,7 @@ left_to_sell_items = Schema(collections.OrderedDict([
     ("Color Desc", (str, str)),
     ("Size Desc", (int, int)),
     ("Left to Sell", (int, int)),
-    ("price", (int_from_string, int)),
+    ("price", (int_from_str, int)),
     ("tags", (list_split_strip, str_from_list)),
 ]))
 
@@ -24,7 +24,9 @@ js_group_dresses = Schema(collections.OrderedDict([
     ("Fulfillment", (str, str)),
     ("Sizes", (list_of_int_from_str, str_from_list)),
     ("Colors", (list_split_strip, str_from_list)),
-    ("Price (USD)", (int_from_string, int))
+    ("Price (USD)", (int_from_str, int)),
+    ("Sale Price", (int_from_str, int)),
+    ("On Sale", (bool_from_str, str_from_bool)),
 ]))
 
 shopify_product = Schema(collections.OrderedDict([

@@ -12,6 +12,8 @@ class Product:
             body,
             collection,
             price,
+            sale_price,
+            on_sale,
             style_number,
             oversell,
             waitlist,
@@ -25,6 +27,8 @@ class Product:
         self.product_type = 'Dress'
         self.collection = collection
         self.price = price
+        self.sale_price = sale_price
+        self.on_sale = on_sale
         self.style_number = style_number
         self.oversell = oversell
         self.waitlist = waitlist
@@ -41,11 +45,12 @@ class Product:
         # add the collection name without the year as a tag as well.
         split_collection_year = re.compile('(.*)\s+(\d{4}$)')
         coll_year_match = split_collection_year.search(self.collection)
-        collection_name = coll_year_match.group(1)
-        collection_year = coll_year_match.group(2)
-        self.add_tag(collection_name)
-        self.add_tag(collection_year)
-        if collection_name != 'Bridal':
+        if coll_year_match != None:
+            collection_name = coll_year_match.group(1)
+            collection_year = coll_year_match.group(2)
+            self.add_tag(collection_name)
+            self.add_tag(collection_year)
+        if not "Bridal" in self.collection:
             self.add_tag('Collections')
         
     def __repr__(self):
@@ -91,8 +96,20 @@ class Product:
 
         return option_combos
 
-    def get_images():
+    def get_images(self):
         pass
+    
+    def get_price(self):
+        if self.on_sale:
+            return self.sale_price
+        else:
+            return self.price
+        
+    def get_regular_price(self):
+        return self.price
+
+    def is_on_sale(self):
+        return self.on_sale
         
 class Variant:
     """
