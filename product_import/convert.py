@@ -156,7 +156,7 @@ def main():
                 product.add_tag(tag)
             
         if product.is_on_sale():
-            product.add_tag("On Sale")
+            product.add_tag("Sale")
                 
         product.populate_variants(inventory)
 
