@@ -10,7 +10,6 @@ left_to_sell_items = Schema(collections.OrderedDict([
     ("Size Desc", (int, int)),
     ("Left to Sell", (int, int)),
     ("price", (int_from_str, int)),
-    ("tags", (list_split_strip, str_from_list)),
 ]))
 
 # each row maps to a product with lists of options.
@@ -27,6 +26,7 @@ js_group_dresses = Schema(collections.OrderedDict([
     ("Price (USD)", (int_from_str, int)),
     ("Sale Price", (int_from_str, int)),
     ("On Sale", (bool_from_str, str_from_bool)),
+    ("Tags", (list_or_none_from_string, str_from_list)),
 ]))
 
 shopify_product = Schema(collections.OrderedDict([

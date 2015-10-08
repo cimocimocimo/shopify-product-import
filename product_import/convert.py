@@ -32,19 +32,16 @@ def prepare_left_to_sell_file():
     # the size labels
     sizes = rows_list[6][3:12]
     
-    # the tags
-    tag_names = rows_list[6][12:]
-
+    # matches 882451 / / MID  midnight
     pattern = re.compile("(^\d{6})\s/\s/\s(\w{3})\s{2}(.+)")
 
     variants = list()
     
     # the dress inventories
     for row in rows_list[8:]:
-        if row[0] == '':
-            break
-        
         match = pattern.match(row[0])
+        if not match:
+            continue
         style = match.group(1)
         color_code = match.group(2)
         color_name = match.group(3)
@@ -64,10 +61,6 @@ def prepare_left_to_sell_file():
         quantities = row[3:12]
         
         tag_matrix = row[12:]
-        row_tags = []
-        for index, name in enumerate(tag_names):
-            if tag_matrix[index] != '':
-                row_tags.append(tag_names[index])
         
         # create rows for each of the sizes
         for index, size in enumerate(sizes):
@@ -78,7 +71,6 @@ def prepare_left_to_sell_file():
             item["Size Desc"] = size
             item["Left to Sell"] = quantities[index]
             item["price"] = price
-            item["tags"] = row_tags
             
             variants.append(item)
     
@@ -150,9 +142,8 @@ def main():
         if item['Waitlist']:
             product.add_tag('waitlist')
             
-        lts_tags = left_to_sell_data.get_tags(item["Style Number"])
-        if lts_tags != None and len(lts_tags) > 0:
-            for tag in lts_tags:
+        if item['Tags']:
+            for tag in item['Tags']:
                 product.add_tag(tag)
             
         if product.is_on_sale():
@@ -188,6 +179,10 @@ def main():
 
         # get the product images
         images = gallery.get_product_images(product.style_number)
+        
+        # get the image collection as a tag
+        if len(images):
+            product.add_tag(images[0].collection)
         
         # don't add the product if it's missing an image.
         if len(images) == 0:

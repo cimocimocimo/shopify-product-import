@@ -4,11 +4,21 @@ def list_of_int_from_str(s):
     return map(int, s.split(','))
 
 def str_from_list(l):
-    return ','.join(str(x) for x in l)
+    if isinstance(l, list):
+        return ','.join(str(x) for x in l)
+    else:
+        return None
 
 def list_split_strip(s):
     l = s.split(',')
     return [s.strip() for s in l]
+
+def list_or_none_from_string(s):
+    if s:
+        l = s.split(',')
+        return [s.strip() for s in l]
+    else:
+        return None
 
 def int_from_str(s):
     my_int = 0

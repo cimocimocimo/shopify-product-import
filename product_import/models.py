@@ -279,14 +279,12 @@ class ImageGallery:
             return
 
         self.directory = directory.rstrip('/')
-        # self.collections = os.listdir(self.directory)
         self.collections = list(listdir_nohidden(self.directory))
         self.files = dict()
         self.images = list()
 
         for collection in self.collections:
             collection_dir = self.directory + '/' + collection
-            # self.files[collection] = os.listdir(collection_dir)
             self.files[collection] = list(listdir_nohidden(collection_dir))
             self.load_images(self.files[collection], collection)
 
@@ -298,8 +296,11 @@ class ImageGallery:
 
     def get_product_images(self, style_number):
         return [ image for image in self.images if image.style_number == style_number ]
-
-
+    
+    def get_tags(self, style_number):
+        # all images should have the same collection so we only need one.
+        images = self.get_product_images(style_number)
+        return
 
 class Image:
     base_url = 'http://cimocimocimo.s3.amazonaws.com/theia-images/'
@@ -359,13 +360,8 @@ class LeftToSellData:
             style_number = item["Style"]
             
             if style_number not in self.products:
-                product = {"price": item["price"],
-                           "tags": item["tags"]}
+                product = {"price": item["price"]}
                 self.products[style_number] = product
-                
-    def get_tags(self, style_number):
-        if style_number in self.products:
-            return self.products[style_number]["tags"]
                 
     def get_price(self, style_number):
         if style_number in self.products:
