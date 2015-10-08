@@ -11,6 +11,7 @@ class Product:
             title,
             body,
             collection,
+            layout,
             price,
             sale_price,
             on_sale,
@@ -26,6 +27,7 @@ class Product:
         self.vendor = 'Theia'
         self.product_type = 'Dress'
         self.collection = collection
+        self.layout = layout
         self.price = price
         self.sale_price = sale_price
         self.on_sale = on_sale

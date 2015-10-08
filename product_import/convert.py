@@ -128,6 +128,7 @@ def main():
             title=item['Dress Name'],
             body=item['Dress Description'],
             collection=item['Collection'],
+            layout=item['Layout Format'],
             price=item['Price (USD)'],
             sale_price=item['Sale Price'],
             on_sale=item['On Sale'],
@@ -145,7 +146,10 @@ def main():
         if item['Tags']:
             for tag in item['Tags']:
                 product.add_tag(tag)
-            
+                
+        if product.layout:
+            product.add_tag(product.layout)
+                
         if product.is_on_sale():
             product.add_tag("Sale")
                 
@@ -181,8 +185,8 @@ def main():
         images = gallery.get_product_images(product.style_number)
         
         # get the image collection as a tag
-        if len(images):
-            product.add_tag(images[0].collection)
+        # if len(images):
+        #     product.add_tag(images[0].collection)
         
         # don't add the product if it's missing an image.
         if len(images) == 0:
@@ -194,7 +198,7 @@ def main():
             missing_image_list.data.append(product_missing_images)
 
             continue
-        
+
         # default is None
         featured_image = None
         if len(images) > 0:
@@ -213,7 +217,7 @@ def main():
         # with a specific variant.
 
         first = True
-
+        
         for variant in product.variants:
 
             row = collections.OrderedDict()
