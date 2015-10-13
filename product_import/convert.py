@@ -30,7 +30,7 @@ def prepare_left_to_sell_file():
     rows_list = [list(line) for line in csv.reader(f)]
     
     # the size labels
-    sizes = rows_list[6][3:12]
+    sizes = rows_list[22][5:14]
     
     # matches 882451 / / MID  midnight
     pattern = re.compile("(^\d{6})\s/\s/\s(\w{3})\s{2}(.+)")
@@ -38,7 +38,7 @@ def prepare_left_to_sell_file():
     variants = list()
     
     # the dress inventories
-    for row in rows_list[8:]:
+    for row in rows_list[24:]:
         match = pattern.match(row[0])
         if not match:
             continue
@@ -57,10 +57,10 @@ def prepare_left_to_sell_file():
             color_name = color_abbreviations[color_name]
 
         price = int_from_str(row[1].strip())
-            
-        quantities = row[3:12]
         
-        tag_matrix = row[12:]
+        # the sheet is incorrect. the first column under size 0 is the total of all dresses
+        # the column under 2 is for size 0 and it continues that way for the other sizes
+        quantities = row[6:15]
         
         # create rows for each of the sizes
         for index, size in enumerate(sizes):
