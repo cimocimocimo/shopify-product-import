@@ -54,6 +54,8 @@ class Product:
             self.add_tag(collection_year)
         if not "Bridal" in self.collection:
             self.add_tag('Collections')
+        else:
+            self.add_tag('Bridal')
         
     def __repr__(self):
         return "<Product handle:%s title:%s body:%s>" % (self.handle, self.title, self.body)
