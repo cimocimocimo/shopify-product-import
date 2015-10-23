@@ -52,7 +52,8 @@ def prepare_left_to_sell_file():
                                "prb  - prussian blue": "prussian blue",
                                "blk/midnight": "black/midnight",
                                "blk pewter": "black pewter",
-                               "blk/teal": "black/teal"}
+                               "blk/teal": "black/teal",
+                               "blk/gold": "black/gold"}
         if color_name in color_abbreviations:
             color_name = color_abbreviations[color_name]
 
@@ -88,7 +89,7 @@ def main():
     prepare_left_to_sell_file()
     
     # open the data files and unserialze the data according to their schema
-    source = DataFile(filename='data/TheiaDresses.csv', schema=schema.js_group_dresses)
+    source = DataFile(filename='data/ForSaleTheiaDresses.csv', schema=schema.js_group_dresses)
     source.load()
 
     # load in the available inventory from the LTS report
