@@ -16,6 +16,7 @@ left_to_sell_items = Schema(collections.OrderedDict([
 js_group_dresses = Schema(collections.OrderedDict([
     ("Style Number", (int, int)),
     ("Dress Name", (str, str)),
+    ("Handle", (str, str)),
     ("Dress Description", (str, str)),
     ("Collection", (str, str)),
     ("Layout Format", (str, str)),

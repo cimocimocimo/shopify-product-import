@@ -127,6 +127,7 @@ def main():
     for item in source.data:
         product = Product(
             title=item['Dress Name'],
+            handle=item['Handle'],
             body=item['Dress Description'],
             collection=item['Collection'],
             layout=item['Layout Format'],

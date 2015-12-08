@@ -9,6 +9,7 @@ class Product:
     def __init__(
             self,
             title,
+            handle,
             body,
             collection,
             layout,
@@ -20,8 +21,11 @@ class Product:
             waitlist,
             fulfillment,
             is_published):
-
-        self.handle = slugify(title)
+        
+        if handle:
+            self.handle = handle
+        else:
+            self.handle = slugify(title)
         self.title = title
         self.body = body
         self.vendor = 'Theia'
