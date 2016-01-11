@@ -28,6 +28,7 @@ js_group_dresses = Schema(collections.OrderedDict([
     ("Price (USD)", (int_from_str, int)),
     ("Sale Price", (int_from_str, int)),
     ("On Sale", (bool_from_str, str_from_bool)),
+    ("Permanent Markdown", (bool_from_str, str_from_bool)),
     ("Tags", (list_or_none_from_string, str_from_list)),
 ]))
 

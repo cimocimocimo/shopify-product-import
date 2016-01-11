@@ -137,6 +137,7 @@ def main():
             price=item['Price (USD)'],
             sale_price=item['Sale Price'],
             on_sale=item['On Sale'],
+            permanent_markdown=item['Permanent Markdown'],
             style_number=item['Style Number'],
             oversell=item['Oversell'],
             waitlist=item['Waitlist'],

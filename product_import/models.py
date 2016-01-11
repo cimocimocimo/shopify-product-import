@@ -16,6 +16,7 @@ class Product:
             price,
             sale_price,
             on_sale,
+            permanent_markdown,
             style_number,
             oversell,
             waitlist,
@@ -34,6 +35,7 @@ class Product:
         self.layout = layout
         self.price = price
         self.sale_price = sale_price
+        self.permanent_markdown = permanent_markdown
         self.on_sale = on_sale
         self.style_number = style_number
         self.oversell = oversell
@@ -108,7 +110,7 @@ class Product:
         pass
     
     def get_price(self):
-        if self.on_sale:
+        if self.permanent_markdown or self.on_sale:
             return self.sale_price
         else:
             return self.price
@@ -117,7 +119,7 @@ class Product:
         return self.price
 
     def is_on_sale(self):
-        return self.on_sale
+        return self.permanent_markdown or self.on_sale
         
 class Variant:
     """
