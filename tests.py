@@ -112,11 +112,14 @@ class TestProduct(unittest.TestCase):
     def setUp(self):
         self.test_product = Product(
             title="Test Product Title",
+            handle="Test Product Handle",
             body="<p>some content</p>",
             collection="Test Collection Name",
+            layout="test product layout",
             price=999,
             sale_price=759,
             on_sale=False,
+            permanent_markdown=False,
             style_number=123456,
             oversell=True,
             waitlist=False,
@@ -128,11 +131,14 @@ class TestProduct(unittest.TestCase):
         
         self.test_product_sale = Product(
             title="Test Product On Sale",
+            handle="Test Product Handle",
             body="<p>some content</p>",
             collection="Test Collection Name",
+            layout="test product layout",
             price=999,
             sale_price=759,
             on_sale=True,
+            permanent_markdown=False,
             style_number=123457,
             oversell=False,
             waitlist=False,
