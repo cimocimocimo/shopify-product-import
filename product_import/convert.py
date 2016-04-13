@@ -20,6 +20,14 @@ class Converter:
     def export_data(self, target, item_mapper):
         pass
 
+
+def add_colors_to_csv(colors):
+    import csv
+    with open('data/colors.csv', 'wb') as fp:
+        a = csv.writer(fp)
+        for color in colors:
+            a.writerow([color])        
+
 def prepare_left_to_sell_file():
     
     try:
@@ -321,13 +329,8 @@ def main():
         target.data += product_rows
 
     # create a set of colours and print them to a file
-    colors = set(colors)
+    add_colors_to_csv(set(colors))
 
-    import csv
-    with open('data/colors.csv', 'wb') as fp:
-        a = csv.writer(fp)
-        for color in colors:
-            a.writerow([color])
     # write the colors to the csv file
     # save the target file
     target.save()
