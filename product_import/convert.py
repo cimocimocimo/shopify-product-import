@@ -325,9 +325,11 @@ def main():
     
     # store the color names in the DataFile instance
     for c in colors:
+        from color_dictionary import *
         row = collections.OrderedDict()
-        
+
         row["Color Name"] = c
+        row["Hex Value"] = find_hex_from_string(c)
         color_names.data.append(row)
         
     color_names.save()

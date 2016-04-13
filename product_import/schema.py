@@ -4,6 +4,7 @@ from helpers import *
 
 color_names = Schema(collections.OrderedDict([
     ("Color Name", (str, str)),
+    ("Hex Value", (str, str)),
 ]))
 
 # each row maps to a variant of a product.
