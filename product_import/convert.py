@@ -3,6 +3,7 @@ import schema
 from models import *
 import json
 
+
 class Converter:
     """
     Takes two DataFiles and converts the formatted data in one and
@@ -85,10 +86,14 @@ def prepare_left_to_sell_file():
         
 def main():
     
+
+
     # this prepares the LTS report from the weird table layout to the old LTS report format that's
     # specified in the schema.
     prepare_left_to_sell_file()
     
+
+
     # open the data files and unserialze the data according to their schema
     source = DataFile(filename='data/ForSaleTheiaDresses.csv', schema=schema.js_group_dresses)
     # source = DataFile(filename='data/Spring-2016-lookbook-import.csv', schema=schema.js_group_dresses)
@@ -173,6 +178,9 @@ def main():
             if variant.quantity > 0:
                 product.in_stock = True
         
+    
+    # set up a list of colours 
+    colors = list();
 
     # using these Product instances create the target data matching the target schema
     for product in products:
@@ -182,6 +190,8 @@ def main():
         # if not product.in_stock and product.collection != 'Spring 2015':
         #     # print('continue')
         #     continue
+
+
         
         if product.in_stock or product.waitlist:
             # add to 'Shop' Collection
@@ -232,6 +242,10 @@ def main():
 
             # check for an image to use for this variant
             variant_color = variant.get_option_value_by_term('Color')
+
+            #add colors to the list of colours
+            colors.append(variant_color)
+
             variant_image = None
             for image in images:
                 if image.color == variant_color and 'front' in image.description:
@@ -306,6 +320,15 @@ def main():
         # add row(s) to the data file
         target.data += product_rows
 
+    # create a set of colours and print them to a file
+    colors = set(colors)
+
+    import csv
+    with open('data/colors.csv', 'wb') as fp:
+        a = csv.writer(fp)
+        for color in colors:
+            a.writerow([color])
+    # write the colors to the csv file
     # save the target file
     target.save()
     
