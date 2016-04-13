@@ -20,14 +20,6 @@ class Converter:
     def export_data(self, target, item_mapper):
         pass
 
-
-def add_colors_to_csv(colors):
-    import csv
-    with open('data/colors.csv', 'wb') as fp:
-        a = csv.writer(fp)
-        for color in colors:
-            a.writerow([color])        
-
 def prepare_left_to_sell_file():
     
     try:
@@ -94,13 +86,9 @@ def prepare_left_to_sell_file():
         
 def main():
     
-
-
     # this prepares the LTS report from the weird table layout to the old LTS report format that's
     # specified in the schema.
     prepare_left_to_sell_file()
-    
-
 
     # open the data files and unserialze the data according to their schema
     source = DataFile(filename='data/ForSaleTheiaDresses.csv', schema=schema.js_group_dresses)
@@ -113,7 +101,12 @@ def main():
     # load in the available inventory from the LTS report
     left_to_sell = DataFile(filename='data/LeftToSell.csv', schema=schema.left_to_sell_items)
     left_to_sell.load()
-
+    
+    # set up a list of colours 
+    colors = list();
+    # file to keep the color names
+    color_names = DataFile(filename='data/color_names.csv', schema=schema.color_names)
+    
     # check for styles in the LTS data that are missing from the main dress list
     for lts_item in left_to_sell.data:
         lts_item_missing_in_main_data = True
@@ -161,6 +154,10 @@ def main():
         )
         product.add_option('Size', item['Sizes'])
         product.add_option('Color', item['Colors'])
+
+        #add colors to the list of colours
+        colors.extend(item['Colors'])
+        
         if item['Waitlist']:
             product.add_tag('waitlist')
             
@@ -187,9 +184,6 @@ def main():
                 product.in_stock = True
         
     
-    # set up a list of colours 
-    colors = list();
-
     # using these Product instances create the target data matching the target schema
     for product in products:
 
@@ -198,8 +192,6 @@ def main():
         # if not product.in_stock and product.collection != 'Spring 2015':
         #     # print('continue')
         #     continue
-
-
         
         if product.in_stock or product.waitlist:
             # add to 'Shop' Collection
@@ -250,9 +242,6 @@ def main():
 
             # check for an image to use for this variant
             variant_color = variant.get_option_value_by_term('Color')
-
-            #add colors to the list of colours
-            colors.append(variant_color)
 
             variant_image = None
             for image in images:
@@ -328,9 +317,21 @@ def main():
         # add row(s) to the data file
         target.data += product_rows
 
-    # create a set of colours and print them to a file
-    add_colors_to_csv(set(colors))
-
+    # split the color names separated with a /
+    # and join the lists as a flat list with sum()
+    colors = sum([ c.split('/', 1) for c in colors ], [])
+    # get unique colors with set(), then create a sorted list
+    colors = sorted(list(set(colors)))
+    
+    # store the color names in the DataFile instance
+    for c in colors:
+        row = collections.OrderedDict()
+        
+        row["Color Name"] = c
+        color_names.data.append(row)
+        
+    color_names.save()
+    
     # write the colors to the csv file
     # save the target file
     target.save()
