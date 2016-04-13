@@ -1,5 +1,4 @@
 import webcolors
-import re
 
 colors = [
 ["000000", "Black"],
@@ -1567,11 +1566,9 @@ colors = [
 ["FFFF99", "Pale Canary"],
 ["FFFFB4", "Portafino"],
 ["FFFFF0", "Ivory"],
-["FFFFFF", "White"]
-]
+["FFFFFF", "White"]]
 
-colors = colors + [
-
+colors.extend([
 ["C0C0C0","silver"],
 ["E6E6FF","aegean blue"],
 ["C4994B","antique gold"],
@@ -1625,25 +1622,19 @@ colors = colors + [
 ["f488c7", "tourmaline"],
 ["ff978c", "watermelon"],
 ["e0e0e0", "silver"]
+])
 
-]
-
-
-
-def find_hex_from_string(s):
-    name = s
-    hex_code = ""
+def find_hex_from_string(color_name):
+    hex_code = "no hex"
 
     try:
-       hex_code = webcolors.name_to_hex(c)
+        hex_code = webcolors.name_to_hex(color_name)
+        # trim the '#'
+        hex_code = hex_code[1,]
     except Exception:
-        hex_code = ""
+        hex_code = "no hex"
         for color in colors:
-            if color[1].lower() == name:
+            if color[1].lower() == color_name:
                 hex_code = color[0]
-        pass
 
-    if hex_code == "":
-        return "no hex"
-    else:
-        return hex_code
+    return hex_code
