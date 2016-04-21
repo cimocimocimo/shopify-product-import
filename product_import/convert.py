@@ -152,10 +152,10 @@ def main():
             fulfillment=item['Fulfillment'],
             is_published=True
         )
-        product.add_option('Size', item['Sizes'])
         product.add_option('Color', item['Colors'])
+        product.add_option('Size', item['Sizes'])
 
-        #add colors to the list of colours
+        # add colors to the list of colours
         colors.extend(item['Colors'])
         
         if item['Waitlist']:
