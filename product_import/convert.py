@@ -92,6 +92,9 @@ def main():
 
     # open the data files and unserialze the data according to their schema
     source = DataFile(filename='data/ForSaleTheiaDresses.csv', schema=schema.js_group_dresses)
+    # source = DataFile(filename='data/bridesmaids-import-data.csv', schema=schema.js_group_dresses)
+    # source = DataFile(filename='data/bridal-spring-2017-lookbook-import.csv', schema=schema.js_group_dresses)
+    # source = DataFile(filename='data/bridal-spring-2017-import.csv', schema=schema.js_group_dresses)
     # source = DataFile(filename='data/Spring-2016-lookbook-import.csv', schema=schema.js_group_dresses)
     # source = DataFile(filename='data/spring-2016-import.csv', schema=schema.js_group_dresses)
     # source = DataFile(filename='data/bridal-import.csv', schema=schema.js_group_dresses)
