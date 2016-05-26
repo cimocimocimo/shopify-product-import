@@ -319,16 +319,21 @@ class Image:
         self.filename = filename
         self.collection = collection
         self.style_number, self.color, self.description = self.parse_image_filename(self.filename)
+        if self.description.startswith('swatch'):
+            self.image_type = 'swatch'
+        else:
+            self.image_type = 'productImage'
 
     def get_url(self):
         return self.base_url + self.collection + '/' + urllib.quote_plus(self.filename)
 
     def get_img_alt_data_string(self):
         """
-        creates a data packed string like this: 'color%PAIR%blue%ITEM%some%PAIR%thing%DATA%This is the alt text'
+        creates a data packed string like this:
+        'color%PAIR%blue%ITEM%type%PAIR%swatch%DATA%This is the alt text'
         unpacked in the shopify strings
         """
-        return 'color%PAIR%{}%DATA%{}'.format(self.color, self.description)
+        return 'color%PAIR%{}%ITEM%type%PAIR%{}%DATA%{}'.format(self.color, self.image_type, self.description)
     
     @staticmethod
     def parse_image_filename(filename):

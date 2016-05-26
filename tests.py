@@ -91,13 +91,17 @@ class TestImageGallery(unittest.TestCase):
             '882243_silverTaupe_front.jpg',
             '882234_tangerine_front.jpg',
             '882405_midnightAzure_from+front.jpg',
-            '882301_aqua+splash_back.jpg'
+            '882301_aqua+splash_back.jpg',
+            '882243_silverTaupe_swatch.jpg',
+            '882234_tangerine_swatch.jpg',
         ]
         expected = [
-            (882243, 'silver/taupe', 'front'),
-            (882234, 'tangerine', 'front'),
-            (882405, 'midnight/azure', 'from front'),
-            (882301, 'aqua splash', 'back')
+            (882243, 'silver/taupe', 'front', 'productImage'),
+            (882234, 'tangerine', 'front', 'productImage'),
+            (882405, 'midnight/azure', 'from front', 'productImage'),
+            (882301, 'aqua splash', 'back', 'productImage'),
+            (882243, 'silver/taupe', 'swatch', 'swatch'),
+            (882234, 'tangerine', 'swatch', 'swatch'),
         ]
 
         for i, filename in enumerate(filenames):
@@ -105,8 +109,32 @@ class TestImageGallery(unittest.TestCase):
             self.assertEqual(image.style_number, expected[i][0])
             self.assertEqual(image.color, expected[i][1])
             self.assertEqual(image.description, expected[i][2])
+            self.assertEqual(image.image_type, expected[i][3])
 
+    def test_img_alt_data_string(self):
+        
+        filenames = [
+            '882243_silverTaupe_front.jpg',
+            '882234_tangerine_front.jpg',
+            '882405_midnightAzure_from+front.jpg',
+            '882301_aqua+splash_back.jpg',
+            '882243_silverTaupe_swatch.jpg',
+            '882234_tangerine_swatch.jpg',
+        ]
+        expected = [
+            "color%PAIR%silver/taupe%ITEM%type%PAIR%productImage%DATA%front",
+            "color%PAIR%tangerine%ITEM%type%PAIR%productImage%DATA%front",
+            "color%PAIR%midnight/azure%ITEM%type%PAIR%productImage%DATA%from front",
+            "color%PAIR%aqua splash%ITEM%type%PAIR%productImage%DATA%back",
+            "color%PAIR%silver/taupe%ITEM%type%PAIR%swatch%DATA%swatch",
+            "color%PAIR%tangerine%ITEM%type%PAIR%swatch%DATA%swatch",
+        ]
 
+        for i, filename in enumerate(filenames):
+            image = Image(filename, None)
+            self.assertEqual(image.get_img_alt_data_string(), expected[i])
+            
+            
 class TestProduct(unittest.TestCase):
 
     def setUp(self):
