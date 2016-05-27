@@ -144,7 +144,7 @@ def main():
             title=item['Dress Name'],
             handle=item['Handle'],
             body=item['Dress Description'],
-            collection='', # item['Collection'],
+            collection=item['Collection'],
             layout=item['Layout Format'],
             price=item['Price (USD)'],
             sale_price=item['Sale Price'],
@@ -215,7 +215,7 @@ def main():
             product_missing_images = collections.OrderedDict()
             product_missing_images["Style Number"] = product.style_number
             product_missing_images["Dress Name"] = product.title
-            product_missing_images["Collection"] = '' # product.collection
+            product_missing_images["Collection"] = product.collection
             
             missing_image_list.data.append(product_missing_images)
 
@@ -269,6 +269,8 @@ def main():
                 row["Type"] = product.product_type
                 row["Tags"] = product.tags
                 row["Published"] = product.is_published
+                # don't add the collection to the shopify_import file
+                # we are using tags to organize the dresses
                 row["Collection"] = '' # product.collection
 
                 if variant_image == None:
