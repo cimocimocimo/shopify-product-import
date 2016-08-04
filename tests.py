@@ -148,6 +148,7 @@ class TestProduct(unittest.TestCase):
             sale_price=759,
             on_sale=False,
             permanent_markdown=False,
+            never_markdown=False,
             style_number=123456,
             oversell=True,
             waitlist=False,
@@ -167,6 +168,7 @@ class TestProduct(unittest.TestCase):
             sale_price=759,
             on_sale=True,
             permanent_markdown=False,
+            never_markdown=False,
             style_number=123457,
             oversell=False,
             waitlist=False,
@@ -175,7 +177,28 @@ class TestProduct(unittest.TestCase):
         )
         self.test_product_sale.add_option('Size', ['S', 'M', 'L'])
         self.test_product_sale.add_option('Color', ['Green', 'Yellow'])
-
+        
+        self.test_product_never_markdown = Product(
+            title="Test Product Never Markdown",
+            handle="Test Product Handle",
+            body="<p>some content</p>",
+            collection="Test Collection Name",
+            layout="test product layout",
+            price=999,
+            sale_price=759,
+            on_sale=True,
+            permanent_markdown=True,
+            never_markdown=True,
+            style_number=123458,
+            oversell=False,
+            waitlist=False,
+            fulfillment='test-fulfilment',
+            is_published=True
+        )
+        self.test_product_sale.add_option('Size', ['S', 'M', 'L'])
+        self.test_product_sale.add_option('Color', ['Orange', 'Pink'])
+        
+        
     def tearDown(self):
         pass
 
@@ -205,7 +228,8 @@ class TestProduct(unittest.TestCase):
     def test_is_on_sale(self):
         self.assertEqual(self.test_product.is_on_sale(), False)
         self.assertEqual(self.test_product_sale.is_on_sale(), True)
-
+        self.assertEqual(self.test_product_never_markdown.is_on_sale(), False)
+        
         
 class TestVariant(unittest.TestCase):
     def setUp(self):

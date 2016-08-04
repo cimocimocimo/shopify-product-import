@@ -150,6 +150,7 @@ def main():
             sale_price=item['Sale Price'],
             on_sale=item['On Sale'],
             permanent_markdown=item['Permanent Markdown'],
+            never_markdown=item['Never Markdown'],
             style_number=item['Style Number'],
             oversell=item['Oversell'],
             waitlist=item['Waitlist'],
