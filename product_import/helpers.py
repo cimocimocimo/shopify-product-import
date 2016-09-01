@@ -1,4 +1,4 @@
-import re
+import re, xlrd, csv
 
 def list_of_int_from_str(s):
     return map(int, s.split(','))
@@ -59,3 +59,27 @@ def spaces_to_underscores(s):
 
 def forward_slash_to_mixedCase(s):
     return re.sub(r'/([a-zA-Z]?)', lambda m: m.group(1).upper(), s)
+
+# converts xls file to csv
+# args
+# in_filename - .xls file
+# sheet_name - sheet name to convert
+# out_filename - .csv file to save
+def convert_xls_to_csv(in_filename, sheet_name, out_filename):
+    try:
+        wb = xlrd.open_workbook(in_filename)
+        sh = wb.sheet_by_name(sheet_name)
+        csv_file = open(out_filename, 'wb')
+    except IOError:
+        return False
+
+    wr = csv.writer(csv_file)
+
+    for rownum in xrange(sh.nrows):
+        wr.writerow(sh.row_values(rownum))
+
+    csv_file.close()
+
+    return True
+
+

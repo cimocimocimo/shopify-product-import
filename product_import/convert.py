@@ -22,6 +22,8 @@ class Converter:
 
 def prepare_left_to_sell_file():
     
+    convert_xls_to_csv('data/lefttosell_summary_js.xls', 'leftToSell_summary_JS.rpt', 'data/TestLeftToSell.csv');
+    
     try:
         f = open('data/NewLeftToSell.csv', 'r')
     except IOError:
