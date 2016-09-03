@@ -19,6 +19,24 @@ class Converter:
 
     def export_data(self, target, item_mapper):
         pass
+    
+# fix color name abbreviations
+def correct_color_name(color):
+    color_abbreviations = {"blk/watermelon": "black/watermelon",
+                           "blush/mid": "blush/midnight",
+                           "prb  - prussian blue": "prussian blue",
+                           "blk/midnight": "black/midnight",
+                           "blk pewter": "black pewter",
+                           "blk/teal": "black/teal",
+                           "blk/gold": "black/gold",
+                           "champ/silver": "champagne/silver",
+                           "creme": "cream"}
+
+    if color in color_abbreviations:
+        return color_abbreviations[color]
+    else:
+        return color
+
 
 def prepare_left_to_sell_file():
     
@@ -50,16 +68,7 @@ def prepare_left_to_sell_file():
         color_name = match.group(3)
         
         # fix color name abbreviations
-        color_abbreviations = {"blk/watermelon": "black/watermelon",
-                               "blush/mid": "blush/midnight",
-                               "prb  - prussian blue": "prussian blue",
-                               "blk/midnight": "black/midnight",
-                               "blk pewter": "black pewter",
-                               "blk/teal": "black/teal",
-                               "blk/gold": "black/gold",
-                               "champ/silver": "champagne/silver"}
-        if color_name in color_abbreviations:
-            color_name = color_abbreviations[color_name]
+        color_name = correct_color_name(color_name)
 
         price = int_from_str(row[1].strip())
         
