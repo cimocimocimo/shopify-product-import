@@ -1,5 +1,5 @@
 from product_import.models import ImageGallery, Image, Product, Option, Variant, Inventory
-from product_import.helpers import *
+# from product_import.helpers import *
 import unittest, os, csv, collections, shutil
 
 
@@ -29,7 +29,7 @@ class TestImageGallery(unittest.TestCase):
                 '772405_anotherColor_testing+space.jpg',
                 '772301_color+with+spaces_back.jpg']}
 
-        for collection_name, filenames in images.iteritems():
+        for collection_name, filenames in images.items():
             for filename in filenames:
                 touch('./test_gallery/' + collection_name + '/' + filename)
 

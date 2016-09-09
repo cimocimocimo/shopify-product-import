@@ -69,13 +69,13 @@ def convert_xls_to_csv(in_filename, sheet_name, out_filename):
     try:
         wb = xlrd.open_workbook(in_filename)
         sh = wb.sheet_by_name(sheet_name)
-        csv_file = open(out_filename, 'wb')
+        csv_file = open(out_filename, 'w')
     except IOError:
         return False
 
     wr = csv.writer(csv_file)
 
-    for rownum in xrange(sh.nrows):
+    for rownum in range(sh.nrows):
         wr.writerow(sh.row_values(rownum))
 
     csv_file.close()

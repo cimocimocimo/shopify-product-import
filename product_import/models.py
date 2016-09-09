@@ -1,7 +1,9 @@
-import os, sys, csv, pprint, re, collections, urllib
+import os, sys, csv, pprint, re, collections
+from urllib.parse import quote_plus
 import itertools
 from slugify import slugify
-from helpers import *
+# import helpers
+from .helpers import *
 
 from pprint import pprint
 
@@ -146,7 +148,7 @@ class Variant:
         """
         options = dict()
         for option in self.option_combo:
-            for k, v in option.iteritems():
+            for k, v in option.items():
                 options[k] = v
 
         if (self.style_number != None and
@@ -161,7 +163,7 @@ class Variant:
 
     def option_term_exists(self, term):
         for option in self.option_combo:
-            for k, v in option.iteritems():
+            for k, v in option.items():
                 if k == term:
                     return True
         return False
@@ -169,7 +171,7 @@ class Variant:
     def get_option_value_by_term(self, term):
         if self.option_term_exists(term):
             for option in self.option_combo:
-                for k, v in option.iteritems():
+                for k, v in option.items():
                     if k == term:
                         return v
         return None
@@ -213,7 +215,6 @@ class DataFile:
             self.columns.append(self.schema.columns[header])
 
     def load(self):
-
         try:
             f = open(self.filename, 'r')
         except IOError:
@@ -221,7 +222,7 @@ class DataFile:
         
         rows = csv.reader(f)
         try:
-            headers = rows.next()
+            headers = next(rows)
         except StopIteration:
             return
         
@@ -240,12 +241,12 @@ class DataFile:
 
         # create a list of the column headers for the csv file
         headers = list()
-        for k, v in self.schema.columns.iteritems():
+        for k, v in self.schema.columns.items():
             headers.append(k)
 
         # create the rows of data to write to the file
         for row in self.data:
-            for k, v in row.iteritems():
+            for k, v in row.items():
                 # call the appropriate save function for each column according to the schema
                 row[k] = self.schema.columns[k].save(v)
             
@@ -266,7 +267,7 @@ class Schema:
     def __init__(self, columns):
         self.columns = collections.OrderedDict()
 
-        for key, value in columns.iteritems():
+        for key, value in columns.items():
             self.columns[key] = Column(key, value[0], value[1])
     
 class Column:
@@ -330,7 +331,7 @@ class Image:
             self.image_type = 'productImage'
 
     def get_url(self):
-        return self.base_url + self.collection + '/' + urllib.quote_plus(self.filename)
+        return self.base_url + self.collection + '/' + quote_plus(self.filename)
 
     def get_img_alt_data_string(self):
         """

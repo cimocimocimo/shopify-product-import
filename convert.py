@@ -1,8 +1,11 @@
-import collections, re, pprint
-import schema
-from models import *
-import json
+#!/usr/bin/env python
 
+import collections, re, pprint
+import product_import.schema as schema
+from product_import.models import Product, Variant, Option, DataFile, Schema, Column, ImageGallery, Image, LeftToSellData, Inventory
+import product_import.helpers as helpers
+import json
+import csv
 
 class Converter:
     """
@@ -40,7 +43,7 @@ def correct_color_name(color):
 
 def prepare_left_to_sell_file():
     
-    convert_xls_to_csv('data/lefttosell_summary_js.xls', 'leftToSell_summary_JS.rpt', 'data/TestLeftToSell.csv');
+    helpers.convert_xls_to_csv('data/lefttosell_summary_js.xls', 'leftToSell_summary_JS.rpt', 'data/TestLeftToSell.csv');
     
     try:
         f = open('data/NewLeftToSell.csv', 'r')
@@ -70,7 +73,7 @@ def prepare_left_to_sell_file():
         # fix color name abbreviations
         color_name = correct_color_name(color_name)
 
-        price = int_from_str(row[1].strip())
+        price = helpers.int_from_str(row[1].strip())
         
         # the sheet is incorrect. the first column under size 0 is the total of all dresses
         # the column under 2 is for size 0 and it continues that way for the other sizes
@@ -130,7 +133,7 @@ def main():
                 lts_item_missing_in_main_data = False
                 break
         if lts_item_missing_in_main_data:
-            print lts_item["Style"], lts_item['Color Desc']
+            print(lts_item["Style"], lts_item['Color Desc'])
             
             
     inventory = Inventory(left_to_sell.data)
@@ -300,7 +303,7 @@ def main():
                 option_value_header = "Option%s Value" % i
 
                 # unpack the single item dictionary
-                for k, v in option.iteritems():
+                for k, v in option.items():
                     option_name = k
                     option_value = v
 
@@ -342,12 +345,12 @@ def main():
     colors = sorted(list(set(colors)))
     
     # store the color names in the DataFile instance
-    for c in colors:
-        from color_dictionary import *
+    import product_import.color_dictionary as color_dictionary
+    for c in color_dictionary.colors:
         row = collections.OrderedDict()
 
         row["Color Name"] = c
-        row["Hex Value"] = find_hex_from_string(c)
+        row["Hex Value"] = color_dictionary.find_hex_from_string(c)
         color_names.data.append(row)
         
     color_names.save()

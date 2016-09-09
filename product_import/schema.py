@@ -1,6 +1,6 @@
 import collections
-from models import Schema
-from helpers import *
+from .models import Schema
+from .helpers import *
 
 color_names = Schema(collections.OrderedDict([
     ("Color Name", (str, str)),
