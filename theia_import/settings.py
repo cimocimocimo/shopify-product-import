@@ -37,6 +37,8 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
+
+    'inventory_input',
 ]
 
 MIDDLEWARE = [
@@ -118,3 +120,16 @@ USE_TZ = True
 # https://docs.djangoproject.com/en/1.10/howto/static-files/
 
 STATIC_URL = '/static/'
+
+
+# Dropbox
+DROPBOX_TOKEN = os.environ.get('DROPBOX_TOKEN', '')
+DROPBOX_EXPORT_FOLDER = '/e-commerce'
+
+
+# Shopify
+SHOPIFY = {
+    'name': os.environ.get('SHOPIFY_SHOP_NAME', ''),
+    'api_key': os.environ.get('SHOPIFY_API_KEY', ''),
+    'password': os.environ.get('SHOPIFY_PASSWORD', ''),
+}
