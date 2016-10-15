@@ -1,11 +1,9 @@
 #!/usr/bin/env python
 
-import collections, re, pprint
+import collections, re, pprint, json, csv, argparse
 import product_import.schema as schema
 from product_import.models import Product, Variant, Option, DataFile, Schema, Column, ImageGallery, Image, LeftToSellData, Inventory
 import product_import.helpers as helpers
-import json
-import csv
 
 class Converter:
     """
@@ -98,22 +96,14 @@ def prepare_left_to_sell_file():
     
     target.save()
         
-def main():
+def main(input_file):
     
     # this prepares the LTS report from the weird table layout to the old LTS report format that's
     # specified in the schema.
     prepare_left_to_sell_file()
 
     # open the data files and unserialze the data according to their schema
-    source = DataFile(filename='data/ForSaleTheiaDresses.csv', schema=schema.js_group_dresses)
-    # source = DataFile(filename='data/prefall-2016-import.csv', schema=schema.js_group_dresses)
-    # source = DataFile(filename='data/bridesmaids-import-data.csv', schema=schema.js_group_dresses)
-    # source = DataFile(filename='data/bridal-spring-2017-lookbook-import.csv', schema=schema.js_group_dresses)
-    # source = DataFile(filename='data/bridal-spring-2017-import.csv', schema=schema.js_group_dresses)
-    # source = DataFile(filename='data/Spring-2016-lookbook-import.csv', schema=schema.js_group_dresses)
-    # source = DataFile(filename='data/spring-2016-import.csv', schema=schema.js_group_dresses)
-    # source = DataFile(filename='data/bridal-import.csv', schema=schema.js_group_dresses)
-    # source = DataFile(filename='data/price-update.csv', schema=schema.js_group_dresses)
+    source = DataFile(filename=input_file, schema=schema.js_group_dresses)
     source.load()
 
     # load in the available inventory from the LTS report
@@ -142,7 +132,6 @@ def main():
     # initialize the output csv file.
     target = DataFile(filename='data/shopify_products.csv', schema=schema.shopify_product)
 
-    
     # missing image list
     missing_image_list = DataFile(filename='data/prods_missing_images.csv', schema=schema.dresses_missing_images)
     
@@ -363,4 +352,11 @@ def main():
     missing_image_list.save()
 
 if __name__ == '__main__':
-    main()
+    # get command line args
+    parser = argparse.ArgumentParser(description='Create a Shopify proudct import spreadsheet.')
+    parser.add_argument('-i', '--input',
+                        default='data/ForSaleTheiaDresses.csv',
+                        dest='input_file')
+    args = parser.parse_args()
+
+    main(args.input_file)
