@@ -161,7 +161,9 @@ def main(input_file):
             is_published=True
         )
         product.add_option('Color', item['Colors'])
-        product.add_option('Size', item['Sizes'])
+        # only add the sizes if they are not blank
+        if item['Sizes']:
+            product.add_option('Size', item['Sizes'])
 
         # add colors to the list of colours
         colors.extend(item['Colors'])

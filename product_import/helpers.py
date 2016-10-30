@@ -1,7 +1,17 @@
-import re, xlrd, csv
+import re, xlrd, csv, warnings
+
+# TODO: remove when dropping python 2.x support
+try:
+    basestring
+except NameError:
+    warnings.warn('Using Python 2.x compatibility. Replace instances of "basestring" with "str"')
+    basestring = str
 
 def list_of_int_from_str(s):
-    return map(int, s.split(','))
+    if isinstance(s, basestring) and len(s):
+        return map(int, s.split(','))
+    else:
+        return None
 
 def str_from_list(l):
     if isinstance(l, list):
