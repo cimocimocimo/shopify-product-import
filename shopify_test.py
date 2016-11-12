@@ -37,7 +37,8 @@ def get_latest_export():
     print(type(result.entries[0]))
     for entry in result.entries:
         # print(type(entry.server_modified))
-        print(entry.server_modified)
+        pprint(entry)
+        break
 
 def main():
 
@@ -74,7 +75,6 @@ def main():
     # Remove a product
     # product.destroy()
 
-    print('hey')
     pass
 
 if __name__ == '__main__':

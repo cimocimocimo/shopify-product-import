@@ -25,7 +25,7 @@ class Product:
             waitlist,
             fulfillment,
             is_published):
-        
+
         if handle:
             self.handle = handle
         else:
@@ -66,7 +66,7 @@ class Product:
             self.add_tag('Collections')
         else:
             self.add_tag('Bridal')
-        
+
     def __repr__(self):
         return "<Product handle:%s title:%s body:%s>" % (self.handle, self.title, self.body)
 
@@ -112,13 +112,13 @@ class Product:
 
     def get_images(self):
         pass
-    
+
     def get_price(self):
         if self.is_on_sale():
             return self.sale_price
         else:
             return self.price
-        
+
     def get_regular_price(self):
         return self.price
 
@@ -127,7 +127,7 @@ class Product:
             return False
         else:
             return self.permanent_markdown or self.on_sale
-        
+
 class Variant:
     """
     Defines a unique combination of the product's options.
@@ -143,7 +143,7 @@ class Variant:
 
     def populate_sku(self):
         """
-        From the given options and style number create a sku 
+        From the given options and style number create a sku
         sku starts with the style number
         """
         options = dict()
@@ -219,13 +219,13 @@ class DataFile:
             f = open(self.filename, 'r')
         except IOError:
             return
-        
+
         rows = csv.reader(f)
         try:
             headers = next(rows)
         except StopIteration:
             return
-        
+
         self.map_columns(headers)
 
         # load the data according to the loaded schema
@@ -249,7 +249,7 @@ class DataFile:
             for k, v in row.items():
                 # call the appropriate save function for each column according to the schema
                 row[k] = self.schema.columns[k].save(v)
-            
+
         # save the processed data
         with open(self.filename, 'w+') as f:
             w = csv.DictWriter(f, fieldnames=headers)
@@ -269,7 +269,7 @@ class Schema:
 
         for key, value in columns.items():
             self.columns[key] = Column(key, value[0], value[1])
-    
+
 class Column:
     def __init__(self, name, load_fn, save_fn):
         self.name = name
@@ -312,7 +312,7 @@ class ImageGallery:
 
     def get_product_images(self, style_number):
         return [ image for image in self.images if image.style_number == style_number ]
-    
+
     def get_tags(self, style_number):
         # all images should have the same collection so we only need one.
         images = self.get_product_images(style_number)
@@ -340,11 +340,11 @@ class Image:
         unpacked in the shopify strings
         """
         return 'color%PAIR%{}%ITEM%type%PAIR%{}%DATA%{}'.format(self.color, self.image_type, self.description)
-    
+
     @staticmethod
     def parse_image_filename(filename):
         """ Pulls out the data from the image filename. """
-        
+
         # regexes
         starts_with_six_digits = re.compile(r'^\d{6}')
         capital_letter = re.compile(r'([A-Z]{1})')
@@ -366,7 +366,7 @@ class Image:
         description = plus.sub(r' ', description)
 
         return style_number, color, description
-    
+
 class LeftToSellData:
     """
     Contains the data from the left to sell spreadsheet
@@ -379,16 +379,16 @@ class LeftToSellData:
         self.products = dict()
         for item in data:
             style_number = item["Style"]
-            
+
             if style_number not in self.products:
                 product = {"price": item["price"]}
                 self.products[style_number] = product
-                
+
     def get_price(self, style_number):
         if style_number in self.products:
             return self.products[style_number]["price"]
-    
-    
+
+
 class Inventory:
     """
     contains the inventory information for all the available inventory provided in the Left To Sell report.
