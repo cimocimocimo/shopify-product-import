@@ -68,7 +68,8 @@ class Product:
             self.add_tag('Bridal')
 
     def __repr__(self):
-        return "<Product handle:%s title:%s body:%s>" % (self.handle, self.title, self.body)
+        return 'style: {}, handle: {}, title: {}, variants #: {}'.format(
+            self.style_number, self.handle, self.title, len(self.variants))
 
     def add_tag(self, tag):
         self.tags.append(tag)
@@ -212,7 +213,10 @@ class DataFile:
     def map_columns(self, headers):
         # map each column's schema for each column that is in the data
         for i, header in enumerate(headers):
-            self.columns.append(self.schema.columns[header])
+            try:
+                self.columns.append(self.schema.columns[header])
+            except KeyError:
+                pass
 
     def load(self):
         try:
@@ -232,7 +236,11 @@ class DataFile:
         for row in csv.reader(f):
             item = collections.OrderedDict()
             for i, column in enumerate(row):
-                item[self.columns[i].name] = self.columns[i].load(column)
+                try:
+                    item[self.columns[i].name] = self.columns[i].load(column)
+                except IndexError:
+                    pass
+
             self.data.append(item)
 
         f.close()

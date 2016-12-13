@@ -1,6 +1,7 @@
 #!/usr/bin/env python
 
-import collections, re, pprint, json, csv, argparse
+import collections, re, json, csv, argparse
+from pprint import pprint
 import product_import.schema as schema
 from product_import.models import Product, Variant, Option, DataFile, Schema, Column, ImageGallery, Image, LeftToSellData, Inventory
 import product_import.helpers as helpers
@@ -20,7 +21,7 @@ class Converter:
 
     def export_data(self, target, item_mapper):
         pass
-    
+
 # fix color name abbreviations
 def correct_color_name(color):
     color_abbreviations = {"blk/watermelon": "black/watermelon",
@@ -40,25 +41,25 @@ def correct_color_name(color):
 
 
 def prepare_left_to_sell_file():
-    
+
     helpers.convert_xls_to_csv('data/lefttosell_summary_js.xls', 'leftToSell_summary_JS.rpt', 'data/TestLeftToSell.csv');
-    
+
     try:
         f = open('data/NewLeftToSell.csv', 'r')
     except IOError:
         return
-    
+
     # read all lines of the csv into a 2D list, rows as the first level, columns 2nd.
     rows_list = [list(line) for line in csv.reader(f)]
-    
+
     # the size labels
     sizes = rows_list[22][5:14]
-    
+
     # matches 882451 / / MID  midnight
     pattern = re.compile("(^\d{6})\s/\s/\s(\w{3})\s{2}(.+)")
 
     variants = list()
-    
+
     # the dress inventories
     for row in rows_list[24:]:
         match = pattern.match(row[0])
@@ -67,16 +68,16 @@ def prepare_left_to_sell_file():
         style = match.group(1)
         color_code = match.group(2)
         color_name = match.group(3)
-        
+
         # fix color name abbreviations
         color_name = correct_color_name(color_name)
 
         price = helpers.int_from_str(row[1].strip())
-        
+
         # the sheet is incorrect. the first column under size 0 is the total of all dresses
         # the column under 2 is for size 0 and it continues that way for the other sizes
         quantities = row[6:15]
-        
+
         # create rows for each of the sizes
         for index, size in enumerate(sizes):
             item = collections.OrderedDict()
@@ -86,18 +87,18 @@ def prepare_left_to_sell_file():
             item["Size Desc"] = size
             item["Left to Sell"] = quantities[index]
             item["price"] = price
-            
+
             variants.append(item)
-    
+
     # initialize the output csv file.
     target = DataFile(filename='data/LeftToSell.csv', schema=schema.left_to_sell_items)
-    
+
     target.data = variants
-    
+
     target.save()
-        
+
 def main(input_file):
-    
+
     # this prepares the LTS report from the weird table layout to the old LTS report format that's
     # specified in the schema.
     prepare_left_to_sell_file()
@@ -109,12 +110,12 @@ def main(input_file):
     # load in the available inventory from the LTS report
     left_to_sell = DataFile(filename='data/LeftToSell.csv', schema=schema.left_to_sell_items)
     left_to_sell.load()
-    
-    # set up a list of colours 
+
+    # set up a list of colours
     colors = list();
     # file to keep the color names
     color_names = DataFile(filename='data/color_names.csv', schema=schema.color_names)
-    
+
     # check for styles in the LTS data that are missing from the main dress list
     for lts_item in left_to_sell.data:
         lts_item_missing_in_main_data = True
@@ -123,18 +124,19 @@ def main(input_file):
                 lts_item_missing_in_main_data = False
                 break
         if lts_item_missing_in_main_data:
-            print(lts_item["Style"], lts_item['Color Desc'])
-            
-            
+            # print(lts_item["Style"], lts_item['Color Desc'])
+            pass
+
+
     inventory = Inventory(left_to_sell.data)
     left_to_sell_data = LeftToSellData(left_to_sell.data)
-    
+
     # initialize the output csv file.
     target = DataFile(filename='data/shopify_products.csv', schema=schema.shopify_product)
 
     # missing image list
     missing_image_list = DataFile(filename='data/prods_missing_images.csv', schema=schema.dresses_missing_images)
-    
+
     # load the images from the gallery
     # **todo** modify to use boto to list all the files in the s3 bucket directly.
     # that way we don't need to keep the local directory and bucket in sync.
@@ -167,20 +169,20 @@ def main(input_file):
 
         # add colors to the list of colours
         colors.extend(item['Colors'])
-        
+
         if item['Waitlist']:
             product.add_tag('waitlist')
-            
+
         if item['Tags']:
             for tag in item['Tags']:
                 product.add_tag(tag)
-                
+
         if product.layout:
             product.add_tag(product.layout)
-                
+
         if product.is_on_sale():
             product.add_tag("Sale")
-                
+
         product.populate_variants(inventory)
 
         products.append(product)
@@ -192,8 +194,7 @@ def main(input_file):
         for variant in product.variants:
             if variant.quantity > 0:
                 product.in_stock = True
-        
-    
+
     # using these Product instances create the target data matching the target schema
     for product in products:
 
@@ -202,7 +203,7 @@ def main(input_file):
         # if not product.in_stock and product.collection != 'Spring 2015':
         #     # print('continue')
         #     continue
-        
+
         if product.in_stock or product.waitlist:
             # add to 'Shop' Collection
             product.product_type = 'Theia Shop'
@@ -211,18 +212,19 @@ def main(input_file):
 
         # get the product images
         images = gallery.get_product_images(product.style_number)
-        
+
         # get the image collection as a tag
         # if len(images):
         #     product.add_tag(images[0].collection)
-        
+
         # don't add the product if it's missing an image.
         if len(images) == 0:
+            print('images length zero')
             product_missing_images = collections.OrderedDict()
             product_missing_images["Style Number"] = product.style_number
             product_missing_images["Dress Name"] = product.title
             product_missing_images["Collection"] = product.collection
-            
+
             missing_image_list.data.append(product_missing_images)
 
             continue
@@ -245,7 +247,7 @@ def main(input_file):
         # with a specific variant.
 
         first = True
-        
+
         for variant in product.variants:
 
             row = collections.OrderedDict()
@@ -255,19 +257,23 @@ def main(input_file):
 
             variant_image = None
             for image in images:
+
                 if image.color == variant_color and 'front' in image.description:
                     variant_image = image
                     break
 
             # if no variant_image skip this row and go to the next variant
             if variant_image == None:
+                print('Style {} missing variant image'.format(product.style_number))
+                pprint('variant color: {}'.format(variant_color))
+                pprint('image data: color: {}, desc: {}'.format(image.color, image.description))
                 continue
-            
+
             row["Handle"] = product.handle
 
             if first:
                 first = False
-                
+
                 # 1st row is the general product data
                 row["Title"] = product.title
                 row["Body (HTML)"] = product.body
@@ -285,7 +291,7 @@ def main(input_file):
                 else:
                     row["Image Src"] = variant_image.get_url()
                     row["Image Alt Text"] = variant_image.get_img_alt_data_string()
-                
+
             # following rows are data for the variants
 
             # add each option
@@ -315,7 +321,10 @@ def main(input_file):
             row["Variant Weight Unit"] = 'lb' # used for displaying the weight
             row["Variant Grams"] = 900 # used inside Shopify, must always be in grams
             row["Variant Image"] = variant_image.get_url()
-            
+
+            # pprint(product)
+            # pprint(row)
+
             product_rows.append(row)
 
         # additional rows are needed for extra images
@@ -334,7 +343,7 @@ def main(input_file):
     colors = sum([ c.split('/', 1) for c in colors ], [])
     # get unique colors with set(), then create a sorted list
     colors = sorted(list(set(colors)))
-    
+
     # store the color names in the DataFile instance
     import product_import.color_dictionary as color_dictionary
     for c in color_dictionary.colors:
@@ -343,13 +352,13 @@ def main(input_file):
         row["Color Name"] = c
         row["Hex Value"] = color_dictionary.find_hex_from_string(c)
         color_names.data.append(row)
-        
+
     color_names.save()
-    
+
     # write the colors to the csv file
     # save the target file
     target.save()
-    
+
     # save the missing images.
     missing_image_list.save()
 
