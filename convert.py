@@ -31,6 +31,9 @@ def correct_color_name(color):
                            "blk pewter": "black pewter",
                            "blk/teal": "black/teal",
                            "blk/gold": "black/gold",
+                           "blk/white": 'black/white',
+                           'fucshia': 'fuchsia',
+                           'fushia multi': 'fuchsia multi',
                            "champ/silver": "champagne/silver",
                            "creme": "cream"}
 
@@ -56,7 +59,8 @@ def prepare_left_to_sell_file():
     sizes = rows_list[22][5:14]
 
     # matches 882451 / / MID  midnight
-    pattern = re.compile("(^\d{6})\s/\s/\s(\w{3})\s{2}(.+)")
+    # matches 882451X / / MID  midnight
+    pattern = re.compile("(^\d{6})X?\s/\s/\s(\w{3})\s{2}(.+)")
 
     variants = list()
 
@@ -85,7 +89,7 @@ def prepare_left_to_sell_file():
             item["Color"] = color_code
             item["Color Desc"] = color_name
             item["Size Desc"] = size
-            item["Left to Sell"] = quantities[index]
+            item["Left to Sell"] = int(float(quantities[index]))
             item["price"] = price
 
             variants.append(item)
@@ -198,12 +202,6 @@ def main(input_file):
     # using these Product instances create the target data matching the target schema
     for product in products:
 
-        # we are not selling the out of stock items on the site so we don't add them to the export
-        # we are only preselling the spring 2015 collection
-        # if not product.in_stock and product.collection != 'Spring 2015':
-        #     # print('continue')
-        #     continue
-
         if product.in_stock or product.waitlist:
             # add to 'Shop' Collection
             product.product_type = 'Theia Shop'
@@ -213,13 +211,8 @@ def main(input_file):
         # get the product images
         images = gallery.get_product_images(product.style_number)
 
-        # get the image collection as a tag
-        # if len(images):
-        #     product.add_tag(images[0].collection)
-
         # don't add the product if it's missing an image.
         if len(images) == 0:
-            print('images length zero')
             product_missing_images = collections.OrderedDict()
             product_missing_images["Style Number"] = product.style_number
             product_missing_images["Dress Name"] = product.title
@@ -264,9 +257,6 @@ def main(input_file):
 
             # if no variant_image skip this row and go to the next variant
             if variant_image == None:
-                print('Style {} missing variant image'.format(product.style_number))
-                pprint('variant color: {}'.format(variant_color))
-                pprint('image data: color: {}, desc: {}'.format(image.color, image.description))
                 continue
 
             row["Handle"] = product.handle
