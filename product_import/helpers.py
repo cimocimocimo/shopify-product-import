@@ -1,7 +1,17 @@
-import re
+import re, xlrd, csv, warnings
+
+# TODO: remove when dropping python 2.x support
+try:
+    basestring
+except NameError:
+    warnings.warn('Using Python 2.x compatibility. Replace instances of "basestring" with "str"')
+    basestring = str
 
 def list_of_int_from_str(s):
-    return map(int, s.split(','))
+    if isinstance(s, basestring) and len(s):
+        return map(int, s.split(','))
+    else:
+        return None
 
 def str_from_list(l):
     if isinstance(l, list):
@@ -59,3 +69,27 @@ def spaces_to_underscores(s):
 
 def forward_slash_to_mixedCase(s):
     return re.sub(r'/([a-zA-Z]?)', lambda m: m.group(1).upper(), s)
+
+# converts xls file to csv
+# args
+# in_filename - .xls file
+# sheet_name - sheet name to convert
+# out_filename - .csv file to save
+def convert_xls_to_csv(in_filename, sheet_name, out_filename):
+    try:
+        wb = xlrd.open_workbook(in_filename)
+        sh = wb.sheet_by_name(sheet_name)
+        csv_file = open(out_filename, 'w')
+    except IOError:
+        return False
+
+    wr = csv.writer(csv_file)
+
+    for rownum in range(sh.nrows):
+        wr.writerow(sh.row_values(rownum))
+
+    csv_file.close()
+
+    return True
+
+

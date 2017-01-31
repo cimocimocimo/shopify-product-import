@@ -1,6 +1,11 @@
 import collections
-from models import Schema
-from helpers import *
+from .models import Schema
+from .helpers import *
+
+color_names = Schema(collections.OrderedDict([
+    ("Color Name", (str, str)),
+    ("Hex Value", (str, str)),
+]))
 
 # each row maps to a variant of a product.
 left_to_sell_items = Schema(collections.OrderedDict([
@@ -29,6 +34,7 @@ js_group_dresses = Schema(collections.OrderedDict([
     ("Sale Price", (int_from_str, int)),
     ("On Sale", (bool_from_str, str_from_bool)),
     ("Permanent Markdown", (bool_from_str, str_from_bool)),
+    ("Never Markdown", (bool_from_str, str_from_bool)),
     ("Tags", (list_or_none_from_string, str_from_list)),
 ]))
 

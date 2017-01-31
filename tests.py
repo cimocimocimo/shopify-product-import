@@ -1,5 +1,5 @@
 from product_import.models import ImageGallery, Image, Product, Option, Variant, Inventory
-from product_import.helpers import *
+# from product_import.helpers import *
 import unittest, os, csv, collections, shutil
 
 
@@ -29,7 +29,7 @@ class TestImageGallery(unittest.TestCase):
                 '772405_anotherColor_testing+space.jpg',
                 '772301_color+with+spaces_back.jpg']}
 
-        for collection_name, filenames in images.iteritems():
+        for collection_name, filenames in images.items():
             for filename in filenames:
                 touch('./test_gallery/' + collection_name + '/' + filename)
 
@@ -91,13 +91,17 @@ class TestImageGallery(unittest.TestCase):
             '882243_silverTaupe_front.jpg',
             '882234_tangerine_front.jpg',
             '882405_midnightAzure_from+front.jpg',
-            '882301_aqua+splash_back.jpg'
+            '882301_aqua+splash_back.jpg',
+            '882243_silverTaupe_swatch.jpg',
+            '882234_tangerine_swatch.jpg',
         ]
         expected = [
-            (882243, 'silver/taupe', 'front'),
-            (882234, 'tangerine', 'front'),
-            (882405, 'midnight/azure', 'from front'),
-            (882301, 'aqua splash', 'back')
+            (882243, 'silver/taupe', 'front', 'productImage'),
+            (882234, 'tangerine', 'front', 'productImage'),
+            (882405, 'midnight/azure', 'from front', 'productImage'),
+            (882301, 'aqua splash', 'back', 'productImage'),
+            (882243, 'silver/taupe', 'swatch', 'swatch'),
+            (882234, 'tangerine', 'swatch', 'swatch'),
         ]
 
         for i, filename in enumerate(filenames):
@@ -105,18 +109,46 @@ class TestImageGallery(unittest.TestCase):
             self.assertEqual(image.style_number, expected[i][0])
             self.assertEqual(image.color, expected[i][1])
             self.assertEqual(image.description, expected[i][2])
+            self.assertEqual(image.image_type, expected[i][3])
 
+    def test_img_alt_data_string(self):
+        
+        filenames = [
+            '882243_silverTaupe_front.jpg',
+            '882234_tangerine_front.jpg',
+            '882405_midnightAzure_from+front.jpg',
+            '882301_aqua+splash_back.jpg',
+            '882243_silverTaupe_swatch.jpg',
+            '882234_tangerine_swatch.jpg',
+        ]
+        expected = [
+            "color%PAIR%silver/taupe%ITEM%type%PAIR%productImage%DATA%front",
+            "color%PAIR%tangerine%ITEM%type%PAIR%productImage%DATA%front",
+            "color%PAIR%midnight/azure%ITEM%type%PAIR%productImage%DATA%from front",
+            "color%PAIR%aqua splash%ITEM%type%PAIR%productImage%DATA%back",
+            "color%PAIR%silver/taupe%ITEM%type%PAIR%swatch%DATA%swatch",
+            "color%PAIR%tangerine%ITEM%type%PAIR%swatch%DATA%swatch",
+        ]
 
+        for i, filename in enumerate(filenames):
+            image = Image(filename, None)
+            self.assertEqual(image.get_img_alt_data_string(), expected[i])
+            
+            
 class TestProduct(unittest.TestCase):
 
     def setUp(self):
         self.test_product = Product(
             title="Test Product Title",
+            handle="Test Product Handle",
             body="<p>some content</p>",
             collection="Test Collection Name",
+            layout="test product layout",
             price=999,
             sale_price=759,
             on_sale=False,
+            permanent_markdown=False,
+            never_markdown=False,
             style_number=123456,
             oversell=True,
             waitlist=False,
@@ -128,11 +160,15 @@ class TestProduct(unittest.TestCase):
         
         self.test_product_sale = Product(
             title="Test Product On Sale",
+            handle="Test Product Handle",
             body="<p>some content</p>",
             collection="Test Collection Name",
+            layout="test product layout",
             price=999,
             sale_price=759,
             on_sale=True,
+            permanent_markdown=False,
+            never_markdown=False,
             style_number=123457,
             oversell=False,
             waitlist=False,
@@ -141,7 +177,28 @@ class TestProduct(unittest.TestCase):
         )
         self.test_product_sale.add_option('Size', ['S', 'M', 'L'])
         self.test_product_sale.add_option('Color', ['Green', 'Yellow'])
-
+        
+        self.test_product_never_markdown = Product(
+            title="Test Product Never Markdown",
+            handle="Test Product Handle",
+            body="<p>some content</p>",
+            collection="Test Collection Name",
+            layout="test product layout",
+            price=999,
+            sale_price=759,
+            on_sale=True,
+            permanent_markdown=True,
+            never_markdown=True,
+            style_number=123458,
+            oversell=False,
+            waitlist=False,
+            fulfillment='test-fulfilment',
+            is_published=True
+        )
+        self.test_product_sale.add_option('Size', ['S', 'M', 'L'])
+        self.test_product_sale.add_option('Color', ['Orange', 'Pink'])
+        
+        
     def tearDown(self):
         pass
 
@@ -171,7 +228,8 @@ class TestProduct(unittest.TestCase):
     def test_is_on_sale(self):
         self.assertEqual(self.test_product.is_on_sale(), False)
         self.assertEqual(self.test_product_sale.is_on_sale(), True)
-
+        self.assertEqual(self.test_product_never_markdown.is_on_sale(), False)
+        
         
 class TestVariant(unittest.TestCase):
     def setUp(self):

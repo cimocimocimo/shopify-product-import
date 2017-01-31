@@ -1,7 +1,9 @@
-import os, sys, csv, pprint, re, collections, urllib
+import os, sys, csv, pprint, re, collections
+from urllib.parse import quote_plus
 import itertools
 from slugify import slugify
-from helpers import *
+# import helpers
+from .helpers import *
 
 from pprint import pprint
 
@@ -17,12 +19,13 @@ class Product:
             sale_price,
             on_sale,
             permanent_markdown,
+            never_markdown,
             style_number,
             oversell,
             waitlist,
             fulfillment,
             is_published):
-        
+
         if handle:
             self.handle = handle
         else:
@@ -36,6 +39,7 @@ class Product:
         self.price = price
         self.sale_price = sale_price
         self.permanent_markdown = permanent_markdown
+        self.never_markdown = never_markdown
         self.on_sale = on_sale
         self.style_number = style_number
         self.oversell = oversell
@@ -62,9 +66,10 @@ class Product:
             self.add_tag('Collections')
         else:
             self.add_tag('Bridal')
-        
+
     def __repr__(self):
-        return "<Product handle:%s title:%s body:%s>" % (self.handle, self.title, self.body)
+        return 'style: {}, handle: {}, title: {}, variants #: {}'.format(
+            self.style_number, self.handle, self.title, len(self.variants))
 
     def add_tag(self, tag):
         self.tags.append(tag)
@@ -108,19 +113,22 @@ class Product:
 
     def get_images(self):
         pass
-    
+
     def get_price(self):
-        if self.permanent_markdown or self.on_sale:
+        if self.is_on_sale():
             return self.sale_price
         else:
             return self.price
-        
+
     def get_regular_price(self):
         return self.price
 
     def is_on_sale(self):
-        return self.permanent_markdown or self.on_sale
-        
+        if self.never_markdown:
+            return False
+        else:
+            return self.permanent_markdown or self.on_sale
+
 class Variant:
     """
     Defines a unique combination of the product's options.
@@ -136,12 +144,12 @@ class Variant:
 
     def populate_sku(self):
         """
-        From the given options and style number create a sku 
+        From the given options and style number create a sku
         sku starts with the style number
         """
         options = dict()
         for option in self.option_combo:
-            for k, v in option.iteritems():
+            for k, v in option.items():
                 options[k] = v
 
         if (self.style_number != None and
@@ -156,7 +164,7 @@ class Variant:
 
     def option_term_exists(self, term):
         for option in self.option_combo:
-            for k, v in option.iteritems():
+            for k, v in option.items():
                 if k == term:
                     return True
         return False
@@ -164,7 +172,7 @@ class Variant:
     def get_option_value_by_term(self, term):
         if self.option_term_exists(term):
             for option in self.option_combo:
-                for k, v in option.iteritems():
+                for k, v in option.items():
                     if k == term:
                         return v
         return None
@@ -205,28 +213,34 @@ class DataFile:
     def map_columns(self, headers):
         # map each column's schema for each column that is in the data
         for i, header in enumerate(headers):
-            self.columns.append(self.schema.columns[header])
+            try:
+                self.columns.append(self.schema.columns[header])
+            except KeyError:
+                pass
 
     def load(self):
-
         try:
             f = open(self.filename, 'r')
         except IOError:
             return
-        
+
         rows = csv.reader(f)
         try:
-            headers = rows.next()
+            headers = next(rows)
         except StopIteration:
             return
-        
+
         self.map_columns(headers)
 
         # load the data according to the loaded schema
         for row in csv.reader(f):
             item = collections.OrderedDict()
             for i, column in enumerate(row):
-                item[self.columns[i].name] = self.columns[i].load(column)
+                try:
+                    item[self.columns[i].name] = self.columns[i].load(column)
+                except IndexError:
+                    pass
+
             self.data.append(item)
 
         f.close()
@@ -235,15 +249,15 @@ class DataFile:
 
         # create a list of the column headers for the csv file
         headers = list()
-        for k, v in self.schema.columns.iteritems():
+        for k, v in self.schema.columns.items():
             headers.append(k)
 
         # create the rows of data to write to the file
         for row in self.data:
-            for k, v in row.iteritems():
+            for k, v in row.items():
                 # call the appropriate save function for each column according to the schema
                 row[k] = self.schema.columns[k].save(v)
-            
+
         # save the processed data
         with open(self.filename, 'w+') as f:
             w = csv.DictWriter(f, fieldnames=headers)
@@ -261,9 +275,9 @@ class Schema:
     def __init__(self, columns):
         self.columns = collections.OrderedDict()
 
-        for key, value in columns.iteritems():
+        for key, value in columns.items():
             self.columns[key] = Column(key, value[0], value[1])
-    
+
 class Column:
     def __init__(self, name, load_fn, save_fn):
         self.name = name
@@ -289,24 +303,32 @@ class ImageGallery:
             return
 
         self.directory = directory.rstrip('/')
-        self.collections = list(listdir_nohidden(self.directory))
+        self.sub_dir_names = list(listdir_nohidden(self.directory))
         self.files = dict()
         self.images = list()
 
-        for collection in self.collections:
-            collection_dir = self.directory + '/' + collection
-            self.files[collection] = list(listdir_nohidden(collection_dir))
-            self.load_images(self.files[collection], collection)
+        for sub_dir in self.sub_dir_names:
+            collection_dir = self.directory + '/' + sub_dir
+            self.files[sub_dir] = list(listdir_nohidden(collection_dir))
+            self.load_images(self.files[sub_dir], sub_dir)
 
-    def load_images(self, files, collection):
-        """ Creates Image objects for all the files in the collection """
+    def load_images(self, files, sub_dir):
+        """ Creates Image objects for all the files in the sub_dir """
 
         for f in files:
-            self.images.append(Image(f, collection))
+            self.images.append(Image(f, sub_dir))
 
-    def get_product_images(self, style_number):
-        return [ image for image in self.images if image.style_number == style_number ]
-    
+    def get_product_images(self, style_number, collection=None):
+        images = [ i for i in self.images
+                 if i.style_number == style_number ]
+
+        if collection:
+            # filter the images by collection
+            images = [ i for i in images
+                       if i.collection == collection ]
+
+        return images
+
     def get_tags(self, style_number):
         # all images should have the same collection so we only need one.
         images = self.get_product_images(style_number)
@@ -315,25 +337,38 @@ class ImageGallery:
 class Image:
     base_url = 'http://cimocimocimo.s3.amazonaws.com/theia-images/'
 
-    def __init__(self, filename, collection):
+    def __repr__(self):
+        return self.__str__()
+
+    def __str__(self):
+        return '{} {}'.format(self.filename, self.collection)
+
+    def __init__(self, filename, dir_name):
         self.filename = filename
-        self.collection = collection
+        self.dir_name = dir_name
+        # replace '-' with ' ' in collection names
+        self.collection = dir_name.replace('-', ' ')
         self.style_number, self.color, self.description = self.parse_image_filename(self.filename)
+        if self.description.startswith('swatch'):
+            self.image_type = 'swatch'
+        else:
+            self.image_type = 'productImage'
 
     def get_url(self):
-        return self.base_url + self.collection + '/' + urllib.quote_plus(self.filename)
+        return self.base_url + self.dir_name + '/' + quote_plus(self.filename)
 
     def get_img_alt_data_string(self):
         """
-        creates a data packed string like this: 'color%PAIR%blue%ITEM%some%PAIR%thing%DATA%This is the alt text'
+        creates a data packed string like this:
+        'color%PAIR%blue%ITEM%type%PAIR%swatch%DATA%This is the alt text'
         unpacked in the shopify strings
         """
-        return 'color%PAIR%{}%DATA%{}'.format(self.color, self.description)
-    
+        return 'color%PAIR%{}%ITEM%type%PAIR%{}%DATA%{}'.format(self.color, self.image_type, self.description)
+
     @staticmethod
     def parse_image_filename(filename):
         """ Pulls out the data from the image filename. """
-        
+
         # regexes
         starts_with_six_digits = re.compile(r'^\d{6}')
         capital_letter = re.compile(r'([A-Z]{1})')
@@ -355,7 +390,7 @@ class Image:
         description = plus.sub(r' ', description)
 
         return style_number, color, description
-    
+
 class LeftToSellData:
     """
     Contains the data from the left to sell spreadsheet
@@ -368,16 +403,16 @@ class LeftToSellData:
         self.products = dict()
         for item in data:
             style_number = item["Style"]
-            
+
             if style_number not in self.products:
                 product = {"price": item["price"]}
                 self.products[style_number] = product
-                
+
     def get_price(self, style_number):
         if style_number in self.products:
             return self.products[style_number]["price"]
-    
-    
+
+
 class Inventory:
     """
     contains the inventory information for all the available inventory provided in the Left To Sell report.
