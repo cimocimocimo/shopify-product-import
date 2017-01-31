@@ -209,7 +209,8 @@ def main(input_file):
             product.product_type = 'Theia Collection'
 
         # get the product images
-        images = gallery.get_product_images(product.style_number)
+        images = gallery.get_product_images(product.style_number,
+                                            product.collection)
 
         # don't add the product if it's missing an image.
         if len(images) == 0:

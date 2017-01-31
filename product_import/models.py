@@ -303,23 +303,31 @@ class ImageGallery:
             return
 
         self.directory = directory.rstrip('/')
-        self.collections = list(listdir_nohidden(self.directory))
+        self.sub_dir_names = list(listdir_nohidden(self.directory))
         self.files = dict()
         self.images = list()
 
-        for collection in self.collections:
-            collection_dir = self.directory + '/' + collection
-            self.files[collection] = list(listdir_nohidden(collection_dir))
-            self.load_images(self.files[collection], collection)
+        for sub_dir in self.sub_dir_names:
+            collection_dir = self.directory + '/' + sub_dir
+            self.files[sub_dir] = list(listdir_nohidden(collection_dir))
+            self.load_images(self.files[sub_dir], sub_dir)
 
-    def load_images(self, files, collection):
-        """ Creates Image objects for all the files in the collection """
+    def load_images(self, files, sub_dir):
+        """ Creates Image objects for all the files in the sub_dir """
 
         for f in files:
-            self.images.append(Image(f, collection))
+            self.images.append(Image(f, sub_dir))
 
-    def get_product_images(self, style_number):
-        return [ image for image in self.images if image.style_number == style_number ]
+    def get_product_images(self, style_number, collection=None):
+        images = [ i for i in self.images
+                 if i.style_number == style_number ]
+
+        if collection:
+            # filter the images by collection
+            images = [ i for i in images
+                       if i.collection == collection ]
+
+        return images
 
     def get_tags(self, style_number):
         # all images should have the same collection so we only need one.
@@ -329,9 +337,17 @@ class ImageGallery:
 class Image:
     base_url = 'http://cimocimocimo.s3.amazonaws.com/theia-images/'
 
-    def __init__(self, filename, collection):
+    def __repr__(self):
+        return self.__str__()
+
+    def __str__(self):
+        return '{} {}'.format(self.filename, self.collection)
+
+    def __init__(self, filename, dir_name):
         self.filename = filename
-        self.collection = collection
+        self.dir_name = dir_name
+        # replace '-' with ' ' in collection names
+        self.collection = dir_name.replace('-', ' ')
         self.style_number, self.color, self.description = self.parse_image_filename(self.filename)
         if self.description.startswith('swatch'):
             self.image_type = 'swatch'
@@ -339,7 +355,7 @@ class Image:
             self.image_type = 'productImage'
 
     def get_url(self):
-        return self.base_url + self.collection + '/' + quote_plus(self.filename)
+        return self.base_url + self.dir_name + '/' + quote_plus(self.filename)
 
     def get_img_alt_data_string(self):
         """
