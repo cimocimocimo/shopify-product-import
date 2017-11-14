@@ -83,7 +83,7 @@ class TestImageGallery(unittest.TestCase):
 
         image = Image('234987_color+name_description.jpg', 'test')
 
-        self.assertEqual(image.get_url(), 'http://cimocimocimo.s3.amazonaws.com/theia-images/test/234987_color%2Bname_description.jpg')
+        self.assertEqual(image.get_url(), 'http://theia-product-import-images.s3.amazonaws.com/test/234987_color%2Bname_description.jpg')
 
     def test_image_properties(self):
 

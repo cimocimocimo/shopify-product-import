@@ -335,7 +335,7 @@ class ImageGallery:
         return
 
 class Image:
-    base_url = 'http://cimocimocimo.s3.amazonaws.com/theia-images/'
+    base_url = 'http://theia-product-import-images.s3.amazonaws.com/'
 
     def __repr__(self):
         return self.__str__()
@@ -376,7 +376,11 @@ class Image:
 
         # split the filename and extention
         filename, extension = os.path.splitext(filename)
-        style_number, color, description = filename.split('_')
+        try:
+            style_number, color, description = filename.split('_')
+        except Exception as e:
+            print(e)
+            print(filename, extension)
 
         style_number = int(style_number)
 
