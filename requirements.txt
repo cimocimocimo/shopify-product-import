@@ -10,7 +10,7 @@ pathtools==0.1.2
 pyactiveresource==2.1.2
 python-slugify==1.2.1
 pytz==2016.7
-PyYAML==3.12
+PyYAML==5.4
 readline==6.2.4.1
 redis==2.10.5
 reload==0.4
