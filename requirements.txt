@@ -19,7 +19,7 @@ ShopifyAPI==2.1.8
 six==1.10.0
 typing==3.5.2.2
 Unidecode==0.4.19
-urllib3==1.18
+urllib3==1.26.5
 watchdog==0.8.3
 webcolors==1.5
 xlrd==1.0.0
